@@ -1,0 +1,12 @@
+# === This is a 'starter' project .gitignore file ===
+
+# Debug scripts:
+*_debug.js
+
+# Other code testing scripts:
+*0.js
+*1.js
+*2.js
+
+# jEdit's backup files
+*~
