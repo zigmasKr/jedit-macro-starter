@@ -3,6 +3,12 @@
 # Debug scripts:
 *_debug.js
 
+# Text files
+*.txt
+
+# Readings
+[readings]/*
+
 # Other code testing scripts:
 *0.js
 *1.js
