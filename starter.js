@@ -1,5 +1,7 @@
-// Nashorn-JS script: a macro to launch the Perl script articledata.pl.
-// Work started: 2017-01-03
+// Nashorn-JS script: 
+// A macro to launch the Perl script articledata.pl, possibly other scripts;
+// a tool to navigate through specific file trees and handle files.
+// Work steps: 2017-01-03 - Article Data; 2018-07 - QC Tool. 
 
 var javaImports = new JavaImporter(
 	// GUI
@@ -43,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Any script starter :: 2017.01.03-2018.07.27");
+	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.10");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -102,10 +104,10 @@ with (javaImports) {
 		var pnArticleData = createPaneArticleData();
 		tabPaneMain.addTab("Article Data", pnArticleData);
 		//
-		var pnSqcHelper = createPaneSqcHelper();
-		tabPaneMain.addTab("SQC Helper", pnSqcHelper);
+		var pnQcTool = createPaneQcTool();
+		tabPaneMain.addTab("QC Tool", pnQcTool);
 
-		tabPaneMain.setSelectedComponent(pnSqcHelper);
+		tabPaneMain.setSelectedComponent(pnQcTool);
 
 		return tabPaneMain;
 	}
@@ -418,7 +420,7 @@ with (javaImports) {
 		return paneArticleDataOuter;
 	}
 
-	function createPaneSqcHelper()
+	function createPaneQcTool()
 	{
 		var jEdit = Java.type('org.gjt.sp.jedit.jEdit');
 		var view = jEdit.getActiveView();
@@ -668,7 +670,8 @@ with (javaImports) {
 				//var remarksFound = false;
 				var reSync = "(.*)\\\\(.*?)\.synctex\.gz$";
 				// D:\_vtex-els--sqc\__M-N-factors-2018\05 May\01\YJMAA22235\yjmaa22235.synctex.gz
-				var reAqf = "(.*)\\\\(S100\\\\)(.*?)\_S100\.1\_aqf\.pdf$"; // YJMAA_22241_S100.1_aqf.pdf
+				var reAqf = "(.*)\\\\(S100\\\\)(.*?)(\_S100\.1\_aqf)?\.pdf$"; // YJMAA_22241_S100.1_aqf.pdf
+				// For some journals, "*.1_aqf.pdf" files are not included, e.g., BULSCI_2751.pdf.
 				// ..... _S1631073X18301523-20180515_120101_S100.zip
 				var reSourceZip = "(.*)\\\\(S100\\\\)(.*?)\_S100\.zip$";
 				// order, final
@@ -1088,7 +1091,9 @@ with (javaImports) {
 			}
 		);
 		// }}}
-
+		// Tooltips
+		buttonExtractBz2.setToolTipText("Extracts *bz2 archives in the \"Path to item\" and subfolders.");
+		//
 		return paneHelperOuter;
 	}
 
