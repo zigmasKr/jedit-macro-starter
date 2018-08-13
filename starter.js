@@ -45,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.10");
+	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.13");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -685,6 +685,10 @@ with (javaImports) {
 				var reTexout = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.tex$"; // yjmaa22241.tex   // (o?l?d?\\\\?)
 				var reQueries = "(.*)\\\\(S2[0|5]0\\\\)\_queries\.txt$"; // _queries.txt   // (o?l?d?\\\\?)
 				var reRemarks = "(.*)\\\\(S2[0|5]0\\\\)\_remarks\.txt$"; // _remarks.txt   // (o?l?d?\\\\?)
+				//
+				var reS200 = "(.*)\\\\(S200\\\\)(.*)$";
+				var reS250 = "(.*)\\\\(S250\\\\)(.*)$";
+				var reResupply = "(.*)RESUPPLY(.*)$";
 
 				// Multiple flags must be combined using the or operator (|).
 				var ptnSync = Pattern.compile(reSync, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -698,6 +702,10 @@ with (javaImports) {
 				var ptnTexout = Pattern.compile(reTexout, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 				var ptnQueries = Pattern.compile(reQueries, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 				var ptnRemarks = Pattern.compile(reRemarks, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+				//
+				var ptnS200 = Pattern.compile(reS200, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+				var ptnS250 = Pattern.compile(reS250, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+				var ptnResupply = Pattern.compile(reResupply, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
 				var mtchSync;
 				var mtchAqf;
@@ -710,6 +718,10 @@ with (javaImports) {
 				var mtchTexout;
 				var mtchQueries;
 				var mtchRemarks;
+				//
+				var mtchS200;
+				var mtchS250;
+				var mtchResupply;
 
 				// If not in SkyLaTeX:
 				var reTxt = "(.*)\\\\(S2[0|5]0\\\\).*?\.txt$"; // *.txt   // (o?l?d?\\\\?)
@@ -740,6 +752,9 @@ with (javaImports) {
 				var k;
 				var qhh;
 				var qhhs;
+				var S200Found;
+				var S250Found;
+				var resupplyFound;
 				for (k = 0; k < entriesHArray.length; k++) {
 					qhh = entriesHArray[k];
 					// qhh.name is java.io.File, not String
@@ -748,8 +763,27 @@ with (javaImports) {
 					if (mtchSync.find()) {
 						synctexFound = true;
 					}
+					mtchS200 = ptnS200.matcher(qhhs);
+					mtchS250 = ptnS250.matcher(qhhs);
+					mtchResupply = ptnResupply.matcher(qhhs);
+					if (mtchS200.find()) {
+						S200Found = true;
+					}
+					if (mtchS250.find()) {
+						S250Found = true;
+					}
+					if (mtchResupply.find()) {
+						resupplyFound = true;
+					}
 				}
 				//after loop
+				if (S200Found && S250Found) {
+					alert("Both S200 and S250 found.");
+				}
+				if (resupplyFound) {
+					alert("RESUPPLY found.");
+				}
+				//
 				var buffersB;
 				if (synctexFound) {
 					for (k = 0; k < entriesHArray.length; k++) {
