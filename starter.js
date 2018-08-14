@@ -451,14 +451,13 @@ with (javaImports) {
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
 		//
-		var buttonOpenFilesColor = new Color(0x00cc33)   // 0x00cc33
-		var buttonCloseFilesColor = new Color(0xff0000)  // 0xff0000
-		var buttonExtractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
-		buttonBrowsePath.setBackground(buttonOpenFilesColor);
-		////buttonOpenFiles.setBackground(buttonOpenFilesColor);
-		buttonCloseFiles.setBackground(buttonCloseFilesColor);
-		buttonExtractBz2.setBackground(buttonExtractBz2Color);
-		textFieldIsDone.setBackground(buttonExtractBz2Color);
+		var openFilesColor = new Color(0x99ff99)   // 0x00cc33 0x99ff99
+		var closeFilesColor = new Color(0xff0000)  // 0xff0000
+		var extractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
+		buttonBrowsePath.setBackground(openFilesColor);
+		buttonCloseFiles.setBackground(closeFilesColor);
+		buttonExtractBz2.setBackground(extractBz2Color);
+		textFieldIsDone.setBackground(extractBz2Color);
 
 		var nameMasterFolder = "D:\\_vtex-els--sqc\\__M-N-factors-2018";
 		//"D:\\_vtex-els--sqc";
@@ -573,21 +572,14 @@ with (javaImports) {
 		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
-		////paneHelper.add(buttonOpenFiles, gbc);
 		paneHelper.add(buttonCloseFiles, gbc);
 		// ===
-		// (2, 2) position
-		////gbc.weightx = 1.0; //0.5
-		////gbc.gridx = 2;
-		////gbc.gridy = 2;
-		////paneHelper.add(buttonClear, gbc);
 		// (3, 1) position
 		gbc.weightx = 1.0; //0.5
 		gbc.gridx = 1;
 		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
-		//paneHelper.add(buttonCloseFiles, gbc);
 		paneHelper.add(buttonExtractBz2, gbc);
 		// (3, 2) position
 		gbc.weightx = 1.0; //0.5
@@ -596,22 +588,6 @@ with (javaImports) {
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(textFieldIsDone, gbc);
-		
-		
-		// (4, 1) position
-		//gbc.weightx = 1.0; //0.5
-		//gbc.gridx = 1;
-		//gbc.gridy = 4;
-		//gbc.gridwidth = 1;
-		//gbc.fill = GridBagConstraints.NONE;
-		//paneHelper.add(buttonExtractBz2, gbc);
-		// (4, 2) position
-		// gbc.weightx = 1.0; //0.5
-		// gbc.gridx = 2;
-		// gbc.gridy = 4;
-		// gbc.gridwidth = 1;
-		// //gbc.fill = GridBagConstraints.NONE;
-		// paneHelper.add(textFieldIsDone, gbc);
 		// }}}
 
 		// Listeners:
@@ -640,11 +616,16 @@ with (javaImports) {
 		buttonBrowsePath.addActionListener(
 			function () {
 				//try {
+				var pathD;
 				var startLocationD = nameMasterFolder;
 				var dialogTitleD = "Choose Folder for Item";
 				var chooserD = new JFileChooser(startLocationD);
-				var pathD;
+				// https://docs.oracle.com/javase/7/docs/api/javax/swing/JFileChooser.html
+				chooserD.setOpaque(true);
+				chooserD.setBackground(openFilesColor);
 				chooserD.setDialogTitle(dialogTitleD);
+				chooserD.setApproveButtonText("O P E N");
+				chooserD.setApproveButtonToolTipText("Open prescribed files belonging to the item.");
 				chooserD.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				chooserD.setPreferredSize(new Dimension(780, 640));
 				var returnValueD = chooserD.showOpenDialog(null);
@@ -658,14 +639,6 @@ with (javaImports) {
 				}
 		});
 		//}}}
-		//
-		/*
-		buttonClear.addActionListener(
-			function () {
-				textFieldPathToItem.setText("");
-				labelItemId.setText("ITEM9999");
-		});
-		*/
 		//
 		function openItemRelatedFiles(_itemFolderName) {
 		//buttonOpenFiles.addActionListener(
@@ -683,357 +656,357 @@ with (javaImports) {
 			// ...S[200|250]\\(.*?)_S[200|250]\.xml
 
 			//function () {
-				var synctexFound = false;
-				//var remarksFound = false;
-				var reSync = "(.*)\\\\(.*?)\.synctex\.gz$";
-				// D:\_vtex-els--sqc\__M-N-factors-2018\05 May\01\YJMAA22235\yjmaa22235.synctex.gz
-				var reAqf = "(.*)\\\\(S100\\\\)(.*?)(\_S100\.1\_aqf)?\.pdf$"; // YJMAA_22241_S100.1_aqf.pdf
-				// For some journals, "*.1_aqf.pdf" files are not included, e.g., BULSCI_2751.pdf.
-				// ..... _S1631073X18301523-20180515_120101_S100.zip
-				var reSourceZip = "(.*)\\\\(S100\\\\)(.*?)\_S100\.zip$";
-				// order, final
-				// ...... \fss7429\S200\_S0165011418302847-20180518_063415_S200.xml
-				var reOrder = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*)\_S2[0|5]0.xml$";
-				var reDvidiff = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.dvidiff\.pdf$"; // yjmaa22241.dvidiff.pdf  // (o?l?d?\\\\?)
-				var reDvidifftext = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.dvidifftext\.pdf$"; // yjmaa22241.dvidifftext.pdf  // (o?l?d?\\\\?)
-				// U:\orig_db\esch\yhmat\YHMAT2983\S200\YHMAT_2983-proofs-RSS_NS_02_C830_201807001495220243.pdf
-				var reDigitalSuffix = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]+?)\\d{10,}\.pdf$";
-				var reTexinit = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.tex\.init$"; // yjmaa22241.tex.init   // (o?l?d?\\\\?)
-				var reTexout = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.tex$"; // yjmaa22241.tex   // (o?l?d?\\\\?)
-				var reQueries = "(.*)\\\\(S2[0|5]0\\\\)\_queries\.txt$"; // _queries.txt   // (o?l?d?\\\\?)
-				var reRemarks = "(.*)\\\\(S2[0|5]0\\\\)\_remarks\.txt$"; // _remarks.txt   // (o?l?d?\\\\?)
-				//
-				var reS200 = "(.*)\\\\(S200\\\\)(.*)$";
-				var reS250 = "(.*)\\\\(S250\\\\)(.*)$";
-				var reResupply = "(.*)RESUPPLY(.*)$";
+			var synctexFound = false;
+			//var remarksFound = false;
+			var reSync = "(.*)\\\\(.*?)\.synctex\.gz$";
+			// D:\_vtex-els--sqc\__M-N-factors-2018\05 May\01\YJMAA22235\yjmaa22235.synctex.gz
+			var reAqf = "(.*)\\\\(S100\\\\)(.*?)(\_S100\.1\_aqf)?\.pdf$"; // YJMAA_22241_S100.1_aqf.pdf
+			// For some journals, "*.1_aqf.pdf" files are not included, e.g., BULSCI_2751.pdf.
+			// ..... _S1631073X18301523-20180515_120101_S100.zip
+			var reSourceZip = "(.*)\\\\(S100\\\\)(.*?)\_S100\.zip$";
+			// order, final
+			// ...... \fss7429\S200\_S0165011418302847-20180518_063415_S200.xml
+			var reOrder = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*)\_S2[0|5]0.xml$";
+			var reDvidiff = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.dvidiff\.pdf$"; // yjmaa22241.dvidiff.pdf  // (o?l?d?\\\\?)
+			var reDvidifftext = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.dvidifftext\.pdf$"; // yjmaa22241.dvidifftext.pdf  // (o?l?d?\\\\?)
+			// U:\orig_db\esch\yhmat\YHMAT2983\S200\YHMAT_2983-proofs-RSS_NS_02_C830_201807001495220243.pdf
+			var reDigitalSuffix = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]+?)\\d{10,}\.pdf$";
+			var reTexinit = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.tex\.init$"; // yjmaa22241.tex.init   // (o?l?d?\\\\?)
+			var reTexout = "(.*)\\\\(S2[0|5]0\\\\)([^\\\\]*?)\.tex$"; // yjmaa22241.tex   // (o?l?d?\\\\?)
+			var reQueries = "(.*)\\\\(S2[0|5]0\\\\)\_queries\.txt$"; // _queries.txt   // (o?l?d?\\\\?)
+			var reRemarks = "(.*)\\\\(S2[0|5]0\\\\)\_remarks\.txt$"; // _remarks.txt   // (o?l?d?\\\\?)
+			//
+			var reS200 = "(.*)\\\\(S200\\\\)(.*)$";
+			var reS250 = "(.*)\\\\(S250\\\\)(.*)$";
+			var reResupply = "(.*)RESUPPLY(.*)$";
 
-				// Multiple flags must be combined using the or operator (|).
-				var ptnSync = Pattern.compile(reSync, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnAqf = Pattern.compile(reAqf, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnOrder = Pattern.compile(reOrder, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnSourceZip = Pattern.compile(reSourceZip, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnDvidiff = Pattern.compile(reDvidiff, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnDvidifftext = Pattern.compile(reDvidifftext, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnDigitalSuffix = Pattern.compile(reDigitalSuffix, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnTexinit = Pattern.compile(reTexinit, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnTexout = Pattern.compile(reTexout, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnQueries = Pattern.compile(reQueries, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnRemarks = Pattern.compile(reRemarks, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				//
-				var ptnS200 = Pattern.compile(reS200, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnS250 = Pattern.compile(reS250, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnResupply = Pattern.compile(reResupply, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			// Multiple flags must be combined using the or operator (|).
+			var ptnSync = Pattern.compile(reSync, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnAqf = Pattern.compile(reAqf, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnOrder = Pattern.compile(reOrder, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnSourceZip = Pattern.compile(reSourceZip, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnDvidiff = Pattern.compile(reDvidiff, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnDvidifftext = Pattern.compile(reDvidifftext, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnDigitalSuffix = Pattern.compile(reDigitalSuffix, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnTexinit = Pattern.compile(reTexinit, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnTexout = Pattern.compile(reTexout, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnQueries = Pattern.compile(reQueries, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnRemarks = Pattern.compile(reRemarks, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			//
+			var ptnS200 = Pattern.compile(reS200, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnS250 = Pattern.compile(reS250, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnResupply = Pattern.compile(reResupply, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
-				var mtchSync;
-				var mtchAqf;
-				var mtchOrder;
-				var mtchSourceZip;
-				var mtchDvidiff;
-				var mtchDvidifftext;
-				var mtchDigitalSuffix;
-				var mtchTexinit;
-				var mtchTexout;
-				var mtchQueries;
-				var mtchRemarks;
-				//
-				var mtchS200;
-				var mtchS250;
-				var mtchResupply;
+			var mtchSync;
+			var mtchAqf;
+			var mtchOrder;
+			var mtchSourceZip;
+			var mtchDvidiff;
+			var mtchDvidifftext;
+			var mtchDigitalSuffix;
+			var mtchTexinit;
+			var mtchTexout;
+			var mtchQueries;
+			var mtchRemarks;
+			//
+			var mtchS200;
+			var mtchS250;
+			var mtchResupply;
 
-				// If not in SkyLaTeX:
-				var reTxt = "(.*)\\\\(S2[0|5]0\\\\).*?\.txt$"; // *.txt   // (o?l?d?\\\\?)
-				var rePdf = "(.*)\\\\(S2[0|5]0\\\\).*?\.pdf$"; // *.pdf   // (o?l?d?\\\\?)
-				var reVtxt = ".*?V\\d.txt$";                   // *V\d.txt   // (o?l?d?\\\\?)
-				var ptnTxt = Pattern.compile(reTxt, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnPdf = Pattern.compile(rePdf, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var ptnVtxt = Pattern.compile(reVtxt, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var mtchTxt;
-				var mtchPdf;
-				var mtchVtxt;
-				//
-				var initTeX;
-				var corrTeX;
-				var initBuffer;
-				var corrBuffer;
-				var pdfs = [];
-				var txtxmls = [];
-				var cllist = [];
+			// If not in SkyLaTeX:
+			var reTxt = "(.*)\\\\(S2[0|5]0\\\\).*?\.txt$"; // *.txt   // (o?l?d?\\\\?)
+			var rePdf = "(.*)\\\\(S2[0|5]0\\\\).*?\.pdf$"; // *.pdf   // (o?l?d?\\\\?)
+			var reVtxt = ".*?V\\d.txt$";                   // *V\d.txt   // (o?l?d?\\\\?)
+			var ptnTxt = Pattern.compile(reTxt, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnPdf = Pattern.compile(rePdf, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var ptnVtxt = Pattern.compile(reVtxt, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var mtchTxt;
+			var mtchPdf;
+			var mtchVtxt;
+			//
+			var initTeX;
+			var corrTeX;
+			var initBuffer;
+			var corrBuffer;
+			var pdfs = [];
+			var txtxmls = [];
+			var cllist = [];
 
-				var pathStr = textFieldPathToItem.getText();
-				// pathStr is a string for a path, but we need File type
-				var argf =  new File(pathStr)
-				var entriesHArray = [];
-				//
-				arrayDirectoryContents(argf, entriesHArray);
-				//
-				var k;
-				var qhh;
-				var qhhs;
-				var S200Found;
-				var S250Found;
-				var resupplyFound;
+			var pathStr = textFieldPathToItem.getText();
+			// pathStr is a string for a path, but we need File type
+			var argf =  new File(pathStr)
+			var entriesHArray = [];
+			//
+			arrayDirectoryContents(argf, entriesHArray);
+			//
+			var k;
+			var qhh;
+			var qhhs;
+			var S200Found;
+			var S250Found;
+			var resupplyFound;
+			for (k = 0; k < entriesHArray.length; k++) {
+				qhh = entriesHArray[k];
+				// qhh.name is java.io.File, not String
+				qhhs = qhh.name.toString();
+				mtchSync = ptnSync.matcher(qhhs);
+				if (mtchSync.find()) {
+					synctexFound = true;
+				}
+				mtchS200 = ptnS200.matcher(qhhs);
+				mtchS250 = ptnS250.matcher(qhhs);
+				mtchResupply = ptnResupply.matcher(qhhs);
+				if (mtchS200.find()) {
+					S200Found = true;
+				}
+				if (mtchS250.find()) {
+					S250Found = true;
+				}
+				if (mtchResupply.find()) {
+					resupplyFound = true;
+				}
+			}
+			//after loop
+			if (S200Found && S250Found) {
+				alert("Both S200 and S250 found.");
+			}
+			if (resupplyFound) {
+				alert("RESUPPLY found.");
+			}
+			//
+			var buffersB;
+			if (synctexFound) {
 				for (k = 0; k < entriesHArray.length; k++) {
 					qhh = entriesHArray[k];
 					// qhh.name is java.io.File, not String
 					qhhs = qhh.name.toString();
-					mtchSync = ptnSync.matcher(qhhs);
-					if (mtchSync.find()) {
-						synctexFound = true;
-					}
-					mtchS200 = ptnS200.matcher(qhhs);
-					mtchS250 = ptnS250.matcher(qhhs);
-					mtchResupply = ptnResupply.matcher(qhhs);
-					if (mtchS200.find()) {
-						S200Found = true;
-					}
-					if (mtchS250.find()) {
-						S250Found = true;
-					}
-					if (mtchResupply.find()) {
-						resupplyFound = true;
-					}
-				}
-				//after loop
-				if (S200Found && S250Found) {
-					alert("Both S200 and S250 found.");
-				}
-				if (resupplyFound) {
-					alert("RESUPPLY found.");
-				}
-				//
-				var buffersB;
-				if (synctexFound) {
-					for (k = 0; k < entriesHArray.length; k++) {
-						qhh = entriesHArray[k];
-						// qhh.name is java.io.File, not String
-						qhhs = qhh.name.toString();
-						//println(k + ": " + qhhs);
-						mtchAqf = ptnAqf.matcher(qhhs);
-						if (mtchAqf.find()) {
-							//println("aqf:  " + qhhs);
+					//println(k + ": " + qhhs);
+					mtchAqf = ptnAqf.matcher(qhhs);
+					if (mtchAqf.find()) {
+						//println("aqf:  " + qhhs);
+						pdfs.push(qhhs);
+					} else {
+						mtchDvidiff = ptnDvidiff.matcher(qhhs);
+						if (mtchDvidiff.find()) {
+							//println("dvidiff: " + qhhs);
 							pdfs.push(qhhs);
 						} else {
-							mtchDvidiff = ptnDvidiff.matcher(qhhs);
-							if (mtchDvidiff.find()) {
-								//println("dvidiff: " + qhhs);
+							mtchDvidifftext = ptnDvidifftext.matcher(qhhs);
+							if (mtchDvidifftext.find()) {
+								//println("dvidifftext: " + qhhs);
 								pdfs.push(qhhs);
 							} else {
-								mtchDvidifftext = ptnDvidifftext.matcher(qhhs);
-								if (mtchDvidifftext.find()) {
-									//println("dvidifftext: " + qhhs);
+								mtchDigitalSuffix = ptnDigitalSuffix.matcher(qhhs);
+								if (mtchDigitalSuffix.find()) {
 									pdfs.push(qhhs);
 								} else {
-									mtchDigitalSuffix = ptnDigitalSuffix.matcher(qhhs);
-									if (mtchDigitalSuffix.find()) {
-										pdfs.push(qhhs);
+									mtchTexinit = ptnTexinit.matcher(qhhs);
+									if (mtchTexinit.find()) {
+										//println("tex.init: " + qhhs);
+										initTeX = qhhs;
 									} else {
-										mtchTexinit = ptnTexinit.matcher(qhhs);
-										if (mtchTexinit.find()) {
-											//println("tex.init: " + qhhs);
-											initTeX = qhhs;
+										mtchTexout = ptnTexout.matcher(qhhs);
+										if (mtchTexout.find()) {
+											//println("tex: " + qhhs);
+											corrTeX = qhhs;
 										} else {
-											mtchTexout = ptnTexout.matcher(qhhs);
-											if (mtchTexout.find()) {
-												//println("tex: " + qhhs);
-												corrTeX = qhhs;
+											mtchQueries = ptnQueries.matcher(qhhs);
+											if (mtchQueries.find()) {
+												//println("_queries: " + qhhs);
+												txtxmls.push(qhhs);
 											} else {
-												mtchQueries = ptnQueries.matcher(qhhs);
-												if (mtchQueries.find()) {
-													//println("_queries: " + qhhs);
+												mtchRemarks = ptnRemarks.matcher(qhhs);
+												if (mtchRemarks.find()) {
+													//println("_remarks: " + qhhs);
 													txtxmls.push(qhhs);
 												} else {
-													mtchRemarks = ptnRemarks.matcher(qhhs);
-													if (mtchRemarks.find()) {
-														//println("_remarks: " + qhhs);
+													mtchOrder = ptnOrder.matcher(qhhs);
+													if (mtchOrder.find()) {
+														//println("order: " + qhhs);
 														txtxmls.push(qhhs);
 													} else {
-														mtchOrder = ptnOrder.matcher(qhhs);
-														if (mtchOrder.find()) {
-															//println("order: " + qhhs);
-															txtxmls.push(qhhs);
-														} else {
-															mtchSourceZip = ptnSourceZip.matcher(qhhs);
-															if (mtchSourceZip.find()) {
-																//println("source zip: " + qhhs);
-																//txtxmls.push(qhhs);
-															}
-						}}}}}}}}}
-					}
-					//
-					var allViews = jEdit.getViews();
-					var newEmpty = jEdit.newFile(view); // Buffer
-					var t;
-					for (t = 0; t < allViews.length; t++) {
-						if ( (allViews[t].title == "txt / XML") ||
-							 (allViews[t].title == "init & TeX") ) {
-							jEdit.closeView(allViews[t]);
-						}
-					}
-					//
-					// Open LaTeX files in jEdit
-					viewTeX = jEdit.newView(view, newEmpty, newVcfgA);
-					viewTeX.setUserTitle("init & TeX");
-					// JDiff episode:
-					initBuffer = jEdit.openFile(viewTeX, initTeX);
-					corrBuffer = jEdit.openFile(viewTeX, corrTeX);
-					viewTeX.splitVertically();
-					var editPanes = viewTeX.getEditPanes();
-					editPanes[0].setBuffer(initBuffer);
-					editPanes[1].setBuffer(corrBuffer);
-					jEdit.getAction("toggle-dual-diff").invoke(viewTeX);
-					//
-					// other (TXT, XML) files
-					viewTXml = jEdit.newView(view, newEmpty, newVcfgB);
-					viewTXml.setUserTitle("txt / XML");
-					for (t = 0; t < txtxmls.length; t++) {
-						jEdit.openFile(viewTXml, txtxmls[t]);
-					}
-					buffersB = viewTXml.getBuffers();
-					for (t = 0; t < buffersB.length; t++) {
-						// focus is set on _queries.txt
-						if (buffersB[t].getName() == "_queries.txt") {
-							viewTXml.goToBuffer(buffersB[t]);
-						}
-					}
-					//
-					// Now trying to open PDF files
-					/**
-					https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
-					A few more options:
-					/n Launch a separate instance of the Acrobat application, even if one is currently open.
-					/s Open Acrobat, suppressing the splash screen.
-					/o Open Acrobat, suppressing the open file dialog.
-					/h Open Acrobat in hidden mode.
-					*/
-					var kk;
-					cllist = [];
-					cllist.push(_adobeReader);
-					cllist.push("/n");
-					cllist.push("/o");
-					var kk;
-					for (kk = 0; kk < pdfs.length; kk++) {
-						// trick found by trial:
-						cllist.push(pdfs[kk]);
-					}
-					// ***
-					var Runn = Java.type("java.lang.Runnable");
-					var RunAdobe = Java.extend(Runn, {
-							run: function() {
-								runExternalApp(cllist, false)
-							}
-					});
-					var ThreadAdobe = Java.type("java.lang.Thread");
-					var thAdobe = new ThreadAdobe(new RunAdobe());
-					thAdobe.start();
-					//thAdobe.join();
-					// ***
-					//// runExternalApp(cllist, false)  // - DOES NOT work without threading
-					//
-					//println(jEdit.close(view, newEmpty)); // :)
-					//buttonOpenFiles.setEnabled(true);
-				}
-				else {
-					alert("SkyLaTeX output files not found.");
-					for (k = 0; k < entriesHArray.length; k++) {
-						qhh = entriesHArray[k];
-						// qhh.name is java.io.File, not String
-						qhhs = qhh.name.toString();
-						mtchAqf = ptnAqf.matcher(qhhs);
-						if (mtchAqf.find()) {
-							pdfs.push(qhhs);
-						} else {
-							mtchPdf = ptnPdf.matcher(qhhs);
-							if (mtchPdf.find()) {
-								pdfs.push(qhhs);
-							} else {
-								mtchOrder = ptnOrder.matcher(qhhs);
-								if (mtchOrder.find()) {
-									txtxmls.push(qhhs);
-								} else {
-									mtchTxt = ptnTxt.matcher(qhhs);
-									if (mtchTxt.find()) {
-										txtxmls.push(qhhs);
-									} else {
-										mtchSourceZip = ptnSourceZip.matcher(qhhs);
-										if (mtchSourceZip.find()) {
-											//println("source zip: " + qhhs);
-											//txtxmls.push(qhhs);
-										}
-						}}}}
-					}
-					//
-					var allViews = jEdit.getViews();
-					var newEmpty = jEdit.newFile(view); // Buffer
-					var t;
-					for (t = 0; t < allViews.length; t++) {
-						if ( (allViews[t].title.substring(0,5) == "txt /") || // "txt / XML"   // "init & TeX"
-							 (allViews[t].title.substring(0,6) == "init &") ) {
-							jEdit.closeView(allViews[t]);
-						}
-					}
-					//
-					// other (TXT, XML) files
-					viewTXml = jEdit.newView(view, newEmpty, newVcfgB);
-					viewTXml.setUserTitle("txt / XML");
-					for (t = 0; t < txtxmls.length; t++) {
-						jEdit.openFile(viewTXml, txtxmls[t]);
-					}
-					buffersB = viewTXml.getBuffers();
-					for (t = 0; t < buffersB.length; t++) {
-						// focus is set on _V1.txt
-						mtchVtxt = ptnVtxt.matcher(buffersB[t].getName());
-						if (mtchVtxt.find()) {
-							viewTXml.goToBuffer(buffersB[t]);
-						}
-					}
-					//
-					// Now trying to open PDF files
-					/**
-					https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
-					A few more options:
-					/n Launch a separate instance of the Acrobat application, even if one is currently open.
-					/s Open Acrobat, suppressing the splash screen.
-					/o Open Acrobat, suppressing the open file dialog.
-					/h Open Acrobat in hidden mode.
-					*/
-					var kk;
-					cllist = [];
-					cllist.push(_adobeReader);
-					cllist.push("/n");
-					cllist.push("/o");
-					var kk;
-					for (kk = 0; kk < pdfs.length; kk++) {
-						// trick found by trial:
-						cllist.push(pdfs[kk]);
-					}
-					// ***
-					var Runn = Java.type("java.lang.Runnable");
-					var RunAdobe = Java.extend(Runn, {
-							run: function() {
-								runExternalApp(cllist, false)
-							}
-					});
-					var ThreadAdobe = Java.type("java.lang.Thread");
-					var thAdobe = new ThreadAdobe(new RunAdobe());
-					thAdobe.start();
-					//thAdobe.join();
-					// ***
-					//// runExternalApp(cllist, false)  // - DOES NOT work without threading
+														mtchSourceZip = ptnSourceZip.matcher(qhhs);
+														if (mtchSourceZip.find()) {
+															//println("source zip: " + qhhs);
+															//txtxmls.push(qhhs);
+														}
+					}}}}}}}}}
 				}
 				//
-				var reLastSlash = "(.+\\\\)([^\\\\]+)";
-				var ptnLastSlash = Pattern.compile(reLastSlash, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-				var mtchLastSlash;
-				mtchLastSlash = ptnLastSlash.matcher(_itemFolderName);
-				if (mtchLastSlash.find()) {
-					labelItemId.setText(mtchLastSlash.group(2).toUpperCase());
+				var allViews = jEdit.getViews();
+				var newEmpty = jEdit.newFile(view); // Buffer
+				var t;
+				for (t = 0; t < allViews.length; t++) {
+					if ( (allViews[t].title == "txt / XML") ||
+						 (allViews[t].title == "init & TeX") ) {
+						jEdit.closeView(allViews[t]);
+					}
 				}
-				else {
-					labelItemId.setText("ITEM9999");
+				//
+				// Open LaTeX files in jEdit
+				viewTeX = jEdit.newView(view, newEmpty, newVcfgA);
+				viewTeX.setUserTitle("init & TeX");
+				// JDiff episode:
+				initBuffer = jEdit.openFile(viewTeX, initTeX);
+				corrBuffer = jEdit.openFile(viewTeX, corrTeX);
+				viewTeX.splitVertically();
+				var editPanes = viewTeX.getEditPanes();
+				editPanes[0].setBuffer(initBuffer);
+				editPanes[1].setBuffer(corrBuffer);
+				jEdit.getAction("toggle-dual-diff").invoke(viewTeX);
+				//
+				// other (TXT, XML) files
+				viewTXml = jEdit.newView(view, newEmpty, newVcfgB);
+				viewTXml.setUserTitle("txt / XML");
+				for (t = 0; t < txtxmls.length; t++) {
+					jEdit.openFile(viewTXml, txtxmls[t]);
 				}
-
+				buffersB = viewTXml.getBuffers();
+				for (t = 0; t < buffersB.length; t++) {
+					// focus is set on _queries.txt
+					if (buffersB[t].getName() == "_queries.txt") {
+						viewTXml.goToBuffer(buffersB[t]);
+					}
+				}
+				//
+				// Now trying to open PDF files
+				/**
+				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
+				A few more options:
+				/n Launch a separate instance of the Acrobat application, even if one is currently open.
+				/s Open Acrobat, suppressing the splash screen.
+				/o Open Acrobat, suppressing the open file dialog.
+				/h Open Acrobat in hidden mode.
+				*/
+				var kk;
+				cllist = [];
+				cllist.push(_adobeReader);
+				cllist.push("/n");
+				cllist.push("/o");
+				var kk;
+				for (kk = 0; kk < pdfs.length; kk++) {
+					// trick found by trial:
+					cllist.push(pdfs[kk]);
+				}
+				// ***
+				var Runn = Java.type("java.lang.Runnable");
+				var RunAdobe = Java.extend(Runn, {
+						run: function() {
+							runExternalApp(cllist, false)
+						}
+				});
+				var ThreadAdobe = Java.type("java.lang.Thread");
+				var thAdobe = new ThreadAdobe(new RunAdobe());
+				thAdobe.start();
+				//thAdobe.join();
+				// ***
+				//// runExternalApp(cllist, false)  // - DOES NOT work without threading
+				//
+				//println(jEdit.close(view, newEmpty)); // :)
+				//buttonOpenFiles.setEnabled(true);
 			}
-		///);
+			else {
+				alert("SkyLaTeX output files not found.");
+				for (k = 0; k < entriesHArray.length; k++) {
+					qhh = entriesHArray[k];
+					// qhh.name is java.io.File, not String
+					qhhs = qhh.name.toString();
+					mtchAqf = ptnAqf.matcher(qhhs);
+					if (mtchAqf.find()) {
+						pdfs.push(qhhs);
+					} else {
+						mtchPdf = ptnPdf.matcher(qhhs);
+						if (mtchPdf.find()) {
+							pdfs.push(qhhs);
+						} else {
+							mtchOrder = ptnOrder.matcher(qhhs);
+							if (mtchOrder.find()) {
+								txtxmls.push(qhhs);
+							} else {
+								mtchTxt = ptnTxt.matcher(qhhs);
+								if (mtchTxt.find()) {
+									txtxmls.push(qhhs);
+								} else {
+									mtchSourceZip = ptnSourceZip.matcher(qhhs);
+									if (mtchSourceZip.find()) {
+										//println("source zip: " + qhhs);
+										//txtxmls.push(qhhs);
+									}
+					}}}}
+				}
+				//
+				var allViews = jEdit.getViews();
+				var newEmpty = jEdit.newFile(view); // Buffer
+				var t;
+				for (t = 0; t < allViews.length; t++) {
+					if ( (allViews[t].title.substring(0,5) == "txt /") || // "txt / XML"   // "init & TeX"
+						 (allViews[t].title.substring(0,6) == "init &") ) {
+						jEdit.closeView(allViews[t]);
+					}
+				}
+				//
+				// other (TXT, XML) files
+				viewTXml = jEdit.newView(view, newEmpty, newVcfgB);
+				viewTXml.setUserTitle("txt / XML");
+				for (t = 0; t < txtxmls.length; t++) {
+					jEdit.openFile(viewTXml, txtxmls[t]);
+				}
+				buffersB = viewTXml.getBuffers();
+				for (t = 0; t < buffersB.length; t++) {
+					// focus is set on _V1.txt
+					mtchVtxt = ptnVtxt.matcher(buffersB[t].getName());
+					if (mtchVtxt.find()) {
+						viewTXml.goToBuffer(buffersB[t]);
+					}
+				}
+				//
+				// Now trying to open PDF files
+				/**
+				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
+				A few more options:
+				/n Launch a separate instance of the Acrobat application, even if one is currently open.
+				/s Open Acrobat, suppressing the splash screen.
+				/o Open Acrobat, suppressing the open file dialog.
+				/h Open Acrobat in hidden mode.
+				*/
+				var kk;
+				cllist = [];
+				cllist.push(_adobeReader);
+				cllist.push("/n");
+				cllist.push("/o");
+				var kk;
+				for (kk = 0; kk < pdfs.length; kk++) {
+					// trick found by trial:
+					cllist.push(pdfs[kk]);
+				}
+				// ***
+				var Runn = Java.type("java.lang.Runnable");
+				var RunAdobe = Java.extend(Runn, {
+						run: function() {
+							runExternalApp(cllist, false)
+						}
+				});
+				var ThreadAdobe = Java.type("java.lang.Thread");
+				var thAdobe = new ThreadAdobe(new RunAdobe());
+				thAdobe.start();
+				//thAdobe.join();
+				// ***
+				//// runExternalApp(cllist, false)  // - DOES NOT work without threading
+			}
+			//
+			var reLastSlash = "(.+\\\\)([^\\\\]+)";
+			var ptnLastSlash = Pattern.compile(reLastSlash, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+			var mtchLastSlash;
+			mtchLastSlash = ptnLastSlash.matcher(_itemFolderName);
+			if (mtchLastSlash.find()) {
+				labelItemId.setText(mtchLastSlash.group(2).toUpperCase());
+			}
+			else {
+				labelItemId.setText("ITEM9999");
+			}
+
+		}
+
 	//{{{	//~~~ buttonExtractBz2.addActionListener
 		buttonExtractBz2.addActionListener(
 			// extract all *bz2 arxhives
