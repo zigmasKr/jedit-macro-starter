@@ -45,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.13");
+	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.14");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -440,12 +440,12 @@ with (javaImports) {
 		var labelPathToItem = new JLabel("Path to Item ");
 		var textFieldPathToItem = new JTextField(25);
 		textFieldPathToItem.setText("");
-		var buttonBrowsePath = new JButton("Browse Path");
+		var buttonBrowsePath = new JButton("Browse for item");
 		//
 		var labelItemId = new JLabel("ITEM9999 ");
 		labelItemId.setToolTipText("Item in check or just checked");
-		var buttonOpenFiles = new JButton("Open Files For Check");
-		var buttonClear = new JButton("Clear");
+		////var buttonOpenFiles = new JButton("Open Files For Check");
+		////var buttonClear = new JButton("Clear");
 		//
 		var buttonCloseFiles = new JButton("Close Files");
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
@@ -454,7 +454,8 @@ with (javaImports) {
 		var buttonOpenFilesColor = new Color(0x00cc33)   // 0x00cc33
 		var buttonCloseFilesColor = new Color(0xff0000)  // 0xff0000
 		var buttonExtractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
-		buttonOpenFiles.setBackground(buttonOpenFilesColor);
+		buttonBrowsePath.setBackground(buttonOpenFilesColor);
+		////buttonOpenFiles.setBackground(buttonOpenFilesColor);
 		buttonCloseFiles.setBackground(buttonCloseFilesColor);
 		buttonExtractBz2.setBackground(buttonExtractBz2Color);
 		textFieldIsDone.setBackground(buttonExtractBz2Color);
@@ -572,34 +573,45 @@ with (javaImports) {
 		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
-		paneHelper.add(buttonOpenFiles, gbc);
+		////paneHelper.add(buttonOpenFiles, gbc);
+		paneHelper.add(buttonCloseFiles, gbc);
 		// ===
 		// (2, 2) position
-		gbc.weightx = 1.0; //0.5
-		gbc.gridx = 2;
-		gbc.gridy = 2;
-		paneHelper.add(buttonClear, gbc);
+		////gbc.weightx = 1.0; //0.5
+		////gbc.gridx = 2;
+		////gbc.gridy = 2;
+		////paneHelper.add(buttonClear, gbc);
 		// (3, 1) position
 		gbc.weightx = 1.0; //0.5
 		gbc.gridx = 1;
 		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
-		paneHelper.add(buttonCloseFiles, gbc);
-		// (4, 1) position
-		gbc.weightx = 1.0; //0.5
-		gbc.gridx = 1;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		//gbc.fill = GridBagConstraints.NONE;
+		//paneHelper.add(buttonCloseFiles, gbc);
 		paneHelper.add(buttonExtractBz2, gbc);
-		// (4, 2) position
+		// (3, 2) position
 		gbc.weightx = 1.0; //0.5
 		gbc.gridx = 2;
-		gbc.gridy = 4;
+		gbc.gridy = 3;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(textFieldIsDone, gbc);
+		
+		
+		// (4, 1) position
+		//gbc.weightx = 1.0; //0.5
+		//gbc.gridx = 1;
+		//gbc.gridy = 4;
+		//gbc.gridwidth = 1;
+		//gbc.fill = GridBagConstraints.NONE;
+		//paneHelper.add(buttonExtractBz2, gbc);
+		// (4, 2) position
+		// gbc.weightx = 1.0; //0.5
+		// gbc.gridx = 2;
+		// gbc.gridy = 4;
+		// gbc.gridwidth = 1;
+		// //gbc.fill = GridBagConstraints.NONE;
+		// paneHelper.add(textFieldIsDone, gbc);
 		// }}}
 
 		// Listeners:
@@ -624,7 +636,7 @@ with (javaImports) {
 		});
 		//}}}
 
-	//{{{ //~~~ buttonBrowsePath.addActionListener
+	//{{{ //~~~ 
 		buttonBrowsePath.addActionListener(
 			function () {
 				//try {
@@ -641,17 +653,22 @@ with (javaImports) {
 					pathD = chooserD.getSelectedFile().getAbsolutePath();
 					textFieldPathToItem.setText(pathD);
 					nameItemFolder = pathD;
+					//
+					openItemRelatedFiles(pathD);
 				}
 		});
 		//}}}
 		//
+		/*
 		buttonClear.addActionListener(
 			function () {
 				textFieldPathToItem.setText("");
 				labelItemId.setText("ITEM9999");
 		});
+		*/
 		//
-		buttonOpenFiles.addActionListener(
+		function openItemRelatedFiles(_itemFolderName) {
+		//buttonOpenFiles.addActionListener(
 			// If an item is from SkyLaTeX:
 			// For check the following PDF files are opened:
 			// ...S100\\(.*?)_S100.1_aqf.pdf
@@ -665,7 +682,7 @@ with (javaImports) {
 			// ...S[200|250]\\_remarks\.txt   (if any)
 			// ...S[200|250]\\(.*?)_S[200|250]\.xml
 
-			function () {
+			//function () {
 				var synctexFound = false;
 				//var remarksFound = false;
 				var reSync = "(.*)\\\\(.*?)\.synctex\.gz$";
@@ -1003,12 +1020,11 @@ with (javaImports) {
 					// ***
 					//// runExternalApp(cllist, false)  // - DOES NOT work without threading
 				}
-				buttonOpenFiles.setEnabled(true);
 				//
 				var reLastSlash = "(.+\\\\)([^\\\\]+)";
 				var ptnLastSlash = Pattern.compile(reLastSlash, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 				var mtchLastSlash;
-				mtchLastSlash = ptnLastSlash.matcher(nameItemFolder);
+				mtchLastSlash = ptnLastSlash.matcher(_itemFolderName);
 				if (mtchLastSlash.find()) {
 					labelItemId.setText(mtchLastSlash.group(2).toUpperCase());
 				}
@@ -1017,7 +1033,7 @@ with (javaImports) {
 				}
 
 			}
-		);
+		///);
 	//{{{	//~~~ buttonExtractBz2.addActionListener
 		buttonExtractBz2.addActionListener(
 			// extract all *bz2 arxhives
@@ -1126,7 +1142,7 @@ with (javaImports) {
 		);
 		// }}}
 		// Tooltips
-		buttonExtractBz2.setToolTipText("Extracts *bz2 archives in the \"Path to item\" and subfolders.");
+		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in the \"Path to item\" and subfolders.");
 		//
 		return paneHelperOuter;
 	}
