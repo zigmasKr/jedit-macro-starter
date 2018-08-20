@@ -45,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.14");
+	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.20");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -448,6 +448,7 @@ with (javaImports) {
 		////var buttonClear = new JButton("Clear");
 		//
 		var buttonCloseFiles = new JButton("Close Files");
+		var buttonOrigFiles = new JButton("Open orig. PDFs");
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
 		//
@@ -573,6 +574,13 @@ with (javaImports) {
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(buttonCloseFiles, gbc);
+		// (2, 2) position
+		gbc.weightx = 1.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 2;
+		gbc.gridwidth = 1;
+		//gbc.fill = GridBagConstraints.NONE;
+		paneHelper.add(buttonOrigFiles, gbc);
 		// ===
 		// (3, 1) position
 		gbc.weightx = 1.0; //0.5
@@ -1046,7 +1054,91 @@ with (javaImports) {
 				textFieldIsDone.setText("Done: " + length);
 		});
 		// }}}
+	//{{{ //~~~ buttonCloseFiles.addActionListener
+		buttonOrigFiles.addActionListener(
+			// buttonOrigFiles has to unzip files of 
+			// ...\aescte4647\S100\_S1270963817321466-20180702_091021_S100.zip
+			// into temporary subfolder 
+			// ...\aescte4647\S100\_S100\
+			// and then open all PDF files in it
+			function() {
+				var cll = [];     // command line list
+				var reS100zip = "(.*\\\\S100)(.*?)(_S100\.zip)$"; 
+				var ptnS100zip = Pattern.compile(reS100zip, Pattern.DOTALL);
+				var mtchS100zip;
+				//
+				var pathString = textFieldPathToItem.getText();
+				pathString = pathString + "\\S100";
+				var argFileS100 =  new File(pathString);
+				var s100EntriesHashArray = [];
+				arrayDirectoryContents(argFileS100, s100EntriesHashArray);
+				var j;
+				var thh;
+				var thhs;
+				var tempDir;
+				for (j = 0; j < s100EntriesHashArray.length; j++) {
+					thh = s100EntriesHashArray[j];
+					// thh.name is java.io.File, not String
+					thhs = thh.name.toString();
+					mtchS100zip = ptnS100zip.matcher(thhs);
+					if (mtchS100zip.find()) {
+						// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
+						tempDir = mtchS100zip.group(1) + "\\_S100";
+						cll.push(_sevenz);
+						cll.push("x");
+						cll.push(thhs);
+						cll.push("-aoa");
+						cll.push("-o" + tempDir);
+						runExternalApp(cll, true);
+						cll = [];
+					}
+				}
+				// List of PDF files in the subfolder ...\_S100
+				var argTempDir =  new File(tempDir);
+				var entriesTempDir = [];
+				arrayDirectoryContents(argTempDir, entriesTempDir);
+				var pdfsS100 = [];
+				for (j = 0; j < entriesTempDir.length; j++) {
+					thh = entriesTempDir[j];
+					// thh.name is java.io.File, not String
+					thhs = thh.name.toString();
+					if (thhs.substr(-4) == ".pdf") {
+						pdfsS100.push(thhs);
+					}
+				}
+				// Now trying to open PDF files
+				/**
+				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
+				A few more options:
+				/n Launch a separate instance of the Acrobat application, even if one is currently open.
+				/s Open Acrobat, suppressing the splash screen.
+				/o Open Acrobat, suppressing the open file dialog.
+				/h Open Acrobat in hidden mode.
+				*/
+				var kk;
+				cllist = [];
+				cllist.push(_adobeReader);
+				cllist.push("/n");
+				cllist.push("/o");
+				var kk;
+				for (kk = 0; kk < pdfsS100.length; kk++) {
+					// trick found by trial:
+					cllist.push(pdfsS100[kk]);
+				}
+				// ***
+				var Runnn = Java.type("java.lang.Runnable");
+				var RunnAdobe = Java.extend(Runnn, {
+						run: function() {
+							runExternalApp(cllist, false)
+						}
+				});
+				var ThreaddAdobe = Java.type("java.lang.Thread");
+				var thrAdobe = new ThreaddAdobe(new RunnAdobe());
+				thrAdobe.start();
+		});
+		// }}}	
 		//
+		
 	//{{{ //~~~ buttonCloseFiles.addActionListener
 		buttonCloseFiles.addActionListener(
 			/**
@@ -1101,20 +1193,12 @@ with (javaImports) {
 						jEdit.closeBuffer(view, allBuffers[t]);
 					}
 				}
-				//alert("miau 3!");
-				// it is handy to have in sight the previous used item
-				////labelItemId.setText("ITEM9999");
-				//buttonOpenFiles.requestFocus();
-				//macroFrame.setState(Frame.NORMAL); // restores minimized windows
-				//macroFrame.toFront(); // brings to front without needing to setAlwaysOnTop
-				//macroFrame.requestFocusInWindow();
-				//macroFrame.setAlwaysOnTop();
-				//paneHelperOuter.grabFocus();
-				//buttonOpenFiles.requestFocus();
 			}
 		);
 		// }}}
+		
 		// Tooltips
+		buttonOrigFiles.setToolTipText("Opens orig. PDF files from the item's ZIP ..._S100.zip.");
 		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in the \"Path to item\" and subfolders.");
 		//
 		return paneHelperOuter;
