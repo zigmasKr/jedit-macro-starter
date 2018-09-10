@@ -491,7 +491,7 @@ with (javaImports) {
 			viewWidth = scrWidth; //1686;
 			viewHeight = scrHeight - 30; //1020;
 			_adobeReader = adobeReaderWork;
-			_taskkill = "C:/Windows/SysWOW64/taskkill.exe";  // wtf?
+			_taskkill = "C:/Windows/SysWOW64/taskkill.exe";  // ??
 		}
 		// laptop: view.width=1288
 		// laptop: view.height=767
@@ -620,7 +620,7 @@ with (javaImports) {
 		});
 		//}}}
 
-	//{{{ //~~~ 
+	//{{{ //~~~ buttonBrowsePath.addActionListener
 		buttonBrowsePath.addActionListener(
 			function () {
 				//try {
@@ -648,6 +648,42 @@ with (javaImports) {
 		});
 		//}}}
 		//
+	//{{{ //~~~ viewPDFFilesAdobeReader	
+		function viewPDFFilesAdobeReader(pdfFileList) {
+			// Function for code reuse.
+			/**
+			https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
+			A few more options:
+			/n Launch a separate instance of the Acrobat application, even if one is currently open.
+			/s Open Acrobat, suppressing the splash screen.
+			/o Open Acrobat, suppressing the open file dialog.
+			/h Open Acrobat in hidden mode.
+			*/
+			var kk;
+			cllist = [];
+			cllist.push(_adobeReader);
+			cllist.push("/n");
+			cllist.push("/o");
+			var kk;
+			for (kk = 0; kk < pdfFileList.length; kk++) {
+				// trick found by trial:
+				cllist.push(pdfFileList[kk]);
+			}
+			// ***
+			var Runn = Java.type("java.lang.Runnable");
+			var RunAdobe = Java.extend(Runn, {
+					run: function() {
+						runExternalApp(cllist, false)
+					}
+			});
+			var ThreadAdobe = Java.type("java.lang.Thread");
+			var thAdobe = new ThreadAdobe(new RunAdobe());
+			thAdobe.start();
+			//thAdobe.join();
+			// - DOES NOT work without threading
+		}
+	//}}}	
+		
 		function openItemRelatedFiles(_itemFolderName) {
 		//buttonOpenFiles.addActionListener(
 			// If an item is from SkyLaTeX:
@@ -876,42 +912,8 @@ with (javaImports) {
 						viewTXml.goToBuffer(buffersB[t]);
 					}
 				}
-				//
 				// Now trying to open PDF files
-				/**
-				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
-				A few more options:
-				/n Launch a separate instance of the Acrobat application, even if one is currently open.
-				/s Open Acrobat, suppressing the splash screen.
-				/o Open Acrobat, suppressing the open file dialog.
-				/h Open Acrobat in hidden mode.
-				*/
-				var kk;
-				cllist = [];
-				cllist.push(_adobeReader);
-				cllist.push("/n");
-				cllist.push("/o");
-				var kk;
-				for (kk = 0; kk < pdfs.length; kk++) {
-					// trick found by trial:
-					cllist.push(pdfs[kk]);
-				}
-				// ***
-				var Runn = Java.type("java.lang.Runnable");
-				var RunAdobe = Java.extend(Runn, {
-						run: function() {
-							runExternalApp(cllist, false)
-						}
-				});
-				var ThreadAdobe = Java.type("java.lang.Thread");
-				var thAdobe = new ThreadAdobe(new RunAdobe());
-				thAdobe.start();
-				//thAdobe.join();
-				// ***
-				//// runExternalApp(cllist, false)  // - DOES NOT work without threading
-				//
-				//println(jEdit.close(view, newEmpty)); // :)
-				//buttonOpenFiles.setEnabled(true);
+				viewPDFFilesAdobeReader(pdfs);
 			}
 			else {
 				alert("SkyLaTeX output files not found.");
@@ -967,39 +969,8 @@ with (javaImports) {
 						viewTXml.goToBuffer(buffersB[t]);
 					}
 				}
-				//
 				// Now trying to open PDF files
-				/**
-				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
-				A few more options:
-				/n Launch a separate instance of the Acrobat application, even if one is currently open.
-				/s Open Acrobat, suppressing the splash screen.
-				/o Open Acrobat, suppressing the open file dialog.
-				/h Open Acrobat in hidden mode.
-				*/
-				var kk;
-				cllist = [];
-				cllist.push(_adobeReader);
-				cllist.push("/n");
-				cllist.push("/o");
-				var kk;
-				for (kk = 0; kk < pdfs.length; kk++) {
-					// trick found by trial:
-					cllist.push(pdfs[kk]);
-				}
-				// ***
-				var Runn = Java.type("java.lang.Runnable");
-				var RunAdobe = Java.extend(Runn, {
-						run: function() {
-							runExternalApp(cllist, false)
-						}
-				});
-				var ThreadAdobe = Java.type("java.lang.Thread");
-				var thAdobe = new ThreadAdobe(new RunAdobe());
-				thAdobe.start();
-				//thAdobe.join();
-				// ***
-				//// runExternalApp(cllist, false)  // - DOES NOT work without threading
+				viewPDFFilesAdobeReader(pdfs);
 			}
 			//
 			var reLastSlash = "(.+\\\\)([^\\\\]+)";
@@ -1114,35 +1085,8 @@ with (javaImports) {
 						pdfsS100.push(thhs);
 					}
 				}
-				// Now trying to open PDF files
-				/**
-				https://htipe.wordpress.com/2010/10/20/adobe-acrobat-command-line-options/
-				A few more options:
-				/n Launch a separate instance of the Acrobat application, even if one is currently open.
-				/s Open Acrobat, suppressing the splash screen.
-				/o Open Acrobat, suppressing the open file dialog.
-				/h Open Acrobat in hidden mode.
-				*/
-				var kk;
-				cllist = [];
-				cllist.push(_adobeReader);
-				cllist.push("/n");
-				cllist.push("/o");
-				var kk;
-				for (kk = 0; kk < pdfsS100.length; kk++) {
-					// trick found by trial:
-					cllist.push(pdfsS100[kk]);
-				}
-				// ***
-				var Runnn = Java.type("java.lang.Runnable");
-				var RunnAdobe = Java.extend(Runnn, {
-						run: function() {
-							runExternalApp(cllist, false)
-						}
-				});
-				var ThreaddAdobe = Java.type("java.lang.Thread");
-				var thrAdobe = new ThreaddAdobe(new RunnAdobe());
-				thrAdobe.start();
+				// Now trying to open S100 PDF files
+				viewPDFFilesAdobeReader(pdfsS100);
 		});
 		// }}}	
 		//
