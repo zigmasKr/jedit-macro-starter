@@ -1035,6 +1035,7 @@ with (javaImports) {
 				var thhs;
 				var tdir;
 				var length = entriesHashArray.length;
+				var counter = 0;
 				if (length > 0) {
 					for (j = 0; j < length; j++) {
 						thh = entriesHashArray[j];
@@ -1051,12 +1052,13 @@ with (javaImports) {
 							cll.push("-o" + tdir);
 							runExternalApp(cll, true);
 							cll = [];                   // !!!
+							counter++;
 						}
 					}
-					textFieldIsDone.setText("Done: " + length);
+					textFieldIsDone.setText("Done: " + length + "/" + counter);
 				}
 				else {
-					alert("No *.bz2 files found in \"master folder\".");
+					alert("No files found in \"master folder\".");
 				}
 		});
 		// }}}
@@ -1205,7 +1207,7 @@ with (javaImports) {
 		
 		// Tooltips
 		buttonOrigFiles.setToolTipText("Opens orig. PDF files from the item's ZIP ..._S100.zip.");
-		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in the \"Master folder\" and subfolders.");
+		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in \"Master folder\" and subfolders.");
 		//
 		return paneHelperOuter;
 	}
