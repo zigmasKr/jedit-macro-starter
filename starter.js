@@ -45,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.08.20");
+	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.09.10");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -1023,7 +1023,8 @@ with (javaImports) {
 				var reBz2 = "(.*)\\\\(.*?)(\.bz2)$";  // directory - filename - .bz2
 				var ptnBz2 = Pattern.compile(reBz2, Pattern.DOTALL);
 				var mtchBz2;
-				var pathString = textFieldPathToItem.getText();
+				//var pathString = textFieldPathToItem.getText();
+				var pathString = textFieldMasterFolder.getText();
 				var argFile =  new File(pathString)
 				var entriesHashArray = [];
 				//
@@ -1034,24 +1035,29 @@ with (javaImports) {
 				var thhs;
 				var tdir;
 				var length = entriesHashArray.length;
-				for (j = 0; j < length; j++) {
-					thh = entriesHashArray[j];
-					// thh.name is java.io.File, not String
-					thhs = thh.name.toString();
-					mtchBz2 = ptnBz2.matcher(thhs);
-					if (mtchBz2.find()) {
-						// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
-						tdir = mtchBz2.group(1);
-						cll.push(_sevenz);
-						cll.push("x");
-						cll.push(thhs);
-						cll.push("-aoa");
-						cll.push("-o" + tdir);
-						runExternalApp(cll, true);
-						cll = [];                   // !!!
+				if (length > 0) {
+					for (j = 0; j < length; j++) {
+						thh = entriesHashArray[j];
+						// thh.name is java.io.File, not String
+						thhs = thh.name.toString();
+						mtchBz2 = ptnBz2.matcher(thhs);
+						if (mtchBz2.find()) {
+							// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
+							tdir = mtchBz2.group(1);
+							cll.push(_sevenz);
+							cll.push("x");
+							cll.push(thhs);
+							cll.push("-aoa");
+							cll.push("-o" + tdir);
+							runExternalApp(cll, true);
+							cll = [];                   // !!!
+						}
 					}
+					textFieldIsDone.setText("Done: " + length);
 				}
-				textFieldIsDone.setText("Done: " + length);
+				else {
+					alert("No *.bz2 files found in \"master folder\".");
+				}
 		});
 		// }}}
 	//{{{ //~~~ buttonCloseFiles.addActionListener
@@ -1199,7 +1205,7 @@ with (javaImports) {
 		
 		// Tooltips
 		buttonOrigFiles.setToolTipText("Opens orig. PDF files from the item's ZIP ..._S100.zip.");
-		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in the \"Path to item\" and subfolders.");
+		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in the \"Master folder\" and subfolders.");
 		//
 		return paneHelperOuter;
 	}
