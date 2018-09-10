@@ -648,6 +648,20 @@ with (javaImports) {
 		});
 		//}}}
 		//
+		
+	//{{{ //~~~ extractArchiveSevenZ
+ 		function extractArchiveSevenZ(archivePath, tmpDir) {
+ 			// Function for code reuse.	
+ 			// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
+ 			var cll = [];
+ 			cll.push(_sevenz);
+			cll.push("x");
+			cll.push(archivePath);
+			cll.push("-aoa");
+			cll.push("-o" + tmpDir);
+			runExternalApp(cll, true);
+ 		}
+ 	// }}}	
 	//{{{ //~~~ viewPDFFilesAdobeReader	
 		function viewPDFFilesAdobeReader(pdfFileList) {
 			// Function for code reuse.
@@ -990,7 +1004,7 @@ with (javaImports) {
 		buttonExtractBz2.addActionListener(
 			// extract all *bz2 arxhives
 			function () {
-				var cll = [];     // command line list
+				//var cll = [];     // command line list
 				var reBz2 = "(.*)\\\\(.*?)(\.bz2)$";  // directory - filename - .bz2
 				var ptnBz2 = Pattern.compile(reBz2, Pattern.DOTALL);
 				var mtchBz2;
@@ -1014,15 +1028,8 @@ with (javaImports) {
 						thhs = thh.name.toString();
 						mtchBz2 = ptnBz2.matcher(thhs);
 						if (mtchBz2.find()) {
-							// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
 							tdir = mtchBz2.group(1);
-							cll.push(_sevenz);
-							cll.push("x");
-							cll.push(thhs);
-							cll.push("-aoa");
-							cll.push("-o" + tdir);
-							runExternalApp(cll, true);
-							cll = [];                   // !!!
+							extractArchiveSevenZ(thhs, tdir);
 							counter++;
 						}
 					}
@@ -1033,7 +1040,7 @@ with (javaImports) {
 				}
 		});
 		// }}}
-	//{{{ //~~~ buttonCloseFiles.addActionListener
+	//{{{ //~~~ buttonOrigFiles.addActionListener
 		buttonOrigFiles.addActionListener(
 			// buttonOrigFiles has to unzip files of 
 			// ...\aescte4647\S100\_S1270963817321466-20180702_091021_S100.zip
@@ -1041,7 +1048,7 @@ with (javaImports) {
 			// ...\aescte4647\S100\_S100\
 			// and then open all PDF files in it
 			function() {
-				var cll = [];     // command line list
+				//var cll = [];     // command line list
 				var reS100zip = "(.*\\\\S100)(.*?)(_S100\.zip)$"; 
 				var ptnS100zip = Pattern.compile(reS100zip, Pattern.DOTALL);
 				var mtchS100zip;
@@ -1061,15 +1068,8 @@ with (javaImports) {
 					thhs = thh.name.toString();
 					mtchS100zip = ptnS100zip.matcher(thhs);
 					if (mtchS100zip.find()) {
-						// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
 						tempDir = mtchS100zip.group(1) + "\\_S100";
-						cll.push(_sevenz);
-						cll.push("x");
-						cll.push(thhs);
-						cll.push("-aoa");
-						cll.push("-o" + tempDir);
-						runExternalApp(cll, true);
-						cll = [];
+						extractArchiveSevenZ(thhs, tempDir);
 					}
 				}
 				// List of PDF files in the subfolder ...\_S100
