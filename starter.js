@@ -451,6 +451,8 @@ with (javaImports) {
 		var buttonOrigFiles = new JButton("Open orig. PDFs");
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
+		textFieldIsDone.setMaximumSize(new Dimension(25,30));
+		textFieldIsDone.setPreferredSize(new Dimension(20,30));
 		//
 		var openFilesColor = new Color(0x99ff99)   // 0x00cc33 0x99ff99
 		var closeFilesColor = new Color(0xff0000)  // 0xff0000
