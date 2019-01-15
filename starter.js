@@ -11,6 +11,8 @@ var javaImports = new JavaImporter(
 	javax.swing.JLabel,
 	javax.swing.JButton,
 	javax.swing.JTextField,
+	javax.swing.JTextArea,
+	javax.swing.JScrollPane,
 	javax.swing.JComboBox,
 	javax.swing.JFileChooser,
 	javax.swing.WindowConstants,
@@ -45,7 +47,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("STARTER :: Developed :: 2017.01.03-2018.09.10");
+	var macroFrame = new JFrame("=STARTER=");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -106,6 +108,9 @@ with (javaImports) {
 		//
 		var pnQcTool = createPaneQcTool();
 		tabPaneMain.addTab("QC Tool", pnQcTool);
+		//
+		var pnAbout = createPaneAbout();
+		tabPaneMain.addTab("About", pnAbout);
 
 		tabPaneMain.setSelectedComponent(pnQcTool);
 
@@ -432,15 +437,15 @@ with (javaImports) {
 		//
 		paneHelperOuter.add(paneHelper);
 		//
-		var labelMasterFolder = new JLabel("Master folder ");
+		var labelMasterFolder = new JLabel("Master Folder ");
 		var textFieldMasterFolder = new JTextField(25);
 		textFieldMasterFolder.setText("");
-		var buttonMasterFolder = new JButton("Browse Folder");
+		var buttonMasterFolder = new JButton("Choose Folder");
 		//
 		var labelPathToItem = new JLabel("Path to Item ");
 		var textFieldPathToItem = new JTextField(25);
 		textFieldPathToItem.setText("");
-		var buttonBrowsePath = new JButton("Browse for item");
+		var buttonBrowsePath = new JButton("Choose Item");
 		//
 		var labelItemId = new JLabel("ITEM9999 ");
 		labelItemId.setToolTipText("Item in check or just checked");
@@ -448,7 +453,7 @@ with (javaImports) {
 		////var buttonClear = new JButton("Clear");
 		//
 		var buttonCloseFiles = new JButton("Close Files");
-		var buttonOrigFiles = new JButton("Open orig. PDFs");
+		var buttonOrigFiles = new JButton("Open Orig. PDFs");
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
 		textFieldIsDone.setMaximumSize(new Dimension(25,30));
@@ -1156,6 +1161,20 @@ with (javaImports) {
 		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in \"Master folder\" and subfolders.");
 		//
 		return paneHelperOuter;
+	}
+	
+	function createPaneAbout()
+	{
+		var paneAboutOuter = new JPanel();
+		var textAreaAbout = new JTextArea("Developed:\n2017.01.03-2018.09.10;\n2018.11.23");  
+		var scrollPane = new JScrollPane(textAreaAbout);
+		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		//scrollPane.setPreferredSize(new Dimension(250, 250));
+		var paneAbout = new JPanel();
+		paneAbout.setSize(600, 400); // width, height
+		paneAbout.add(scrollPane);
+		paneAboutOuter.add(paneAbout);
+		return paneAboutOuter;
 	}
 
 	//{{{	//~~~ runExternalApp
