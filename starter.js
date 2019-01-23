@@ -16,8 +16,6 @@ var javaImports = new JavaImporter(
 	javax.swing.JComboBox,
 	javax.swing.JFileChooser,
 	javax.swing.WindowConstants,
-	//
-	javax.swing.filechooser.FileSystemView,
 	// AWT
 	java.awt.GridLayout,
 	java.awt.FlowLayout,
@@ -47,7 +45,7 @@ var javaImports = new JavaImporter(
 with (javaImports) {
 
 	// ==================================================================
-	var macroFrame = new JFrame("=STARTER=");
+	var macroFrame = new JFrame("=STARTER :: JS :: 2019-01-23=");
 	var _frame_Width = 600;
 	var _frame_Height = 400;
 	macroFrame.setSize(_frame_Width, _frame_Height);
@@ -275,7 +273,6 @@ with (javaImports) {
 				chooserS.setPreferredSize(new Dimension(380, 660));
 				var returnValue = chooserS.showOpenDialog(null);
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					var selectedFile = chooserS.getSelectedFile();
 					path = chooserS.getSelectedFile().getAbsolutePath();
 					textFieldSourceFile.setText(path);
 				}
@@ -285,19 +282,16 @@ with (javaImports) {
 	//{{{ //~~~ buttonBrowseOutput.addActionListener(
 		buttonBrowseOutput.addActionListener(function ()
 			{
-				// https://community.oracle.com/thread/1359948:
-				// starts file browsing with "My Computer"
-				var fsv = FileSystemView.getFileSystemView();
+				var chooserO = new JFileChooser();
+				var fsv = chooserO.getFileSystemView();
 				var roots = fsv.getRoots();
 				var files = roots[0].listFiles();
 				var start = files[0];
-				//
-				var chooserO = new JFileChooser(start);
+				chooserO.setCurrentDirectory(start);
 				chooserO.setDialogTitle("Choose Output File");
 				chooserO.setPreferredSize(new Dimension(380, 660));
 				var returnValue = chooserO.showOpenDialog(null);
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					var selectedFile = chooserO.getSelectedFile();
 					path = chooserO.getSelectedFile().getAbsolutePath();
 					textFieldOutputFile.setText(path);
 				}
@@ -442,7 +436,7 @@ with (javaImports) {
 		textFieldMasterFolder.setText("");
 		var buttonMasterFolder = new JButton("Choose Folder");
 		//
-		var labelPathToItem = new JLabel("Path to Item ");
+		var labelPathToItem = new JLabel("Path To Item ");
 		var textFieldPathToItem = new JTextField(25);
 		textFieldPathToItem.setText("");
 		var buttonBrowsePath = new JButton("Choose Item");
@@ -619,7 +613,6 @@ with (javaImports) {
 				chooserMf.setPreferredSize(new Dimension(380, 660));
 				var returnValueMf = chooserMf.showOpenDialog(null);
 				if (returnValueMf == JFileChooser.APPROVE_OPTION) {
-					var selectedFileMf = chooserMf.getSelectedFile();
 					pathMf = chooserMf.getSelectedFile().getAbsolutePath();
 					textFieldMasterFolder.setText(pathMf);
 					nameMasterFolder = pathMf;
@@ -642,10 +635,9 @@ with (javaImports) {
 				chooserD.setApproveButtonText("O P E N");
 				chooserD.setApproveButtonToolTipText("Open prescribed files belonging to the item.");
 				chooserD.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				chooserD.setPreferredSize(new Dimension(780, 640));
+				chooserD.setPreferredSize(new Dimension(1050, 520));  // (780, 640)
 				var returnValueD = chooserD.showOpenDialog(null);
 				if (returnValueD == JFileChooser.APPROVE_OPTION) {
-					var selectedFileD = chooserD.getSelectedFile();
 					pathD = chooserD.getSelectedFile().getAbsolutePath();
 					textFieldPathToItem.setText(pathD);
 					nameItemFolder = pathD;
