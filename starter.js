@@ -44,25 +44,6 @@ var javaImports = new JavaImporter(
 
 with (javaImports) {
 
-	// ==================================================================
-	var macroFrame = new JFrame("=STARTER :: JS :: 2019-01-23=");
-	var _frame_Width = 600;
-	var _frame_Height = 400;
-	macroFrame.setSize(_frame_Width, _frame_Height);
-	var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	var defaultScreen = ge.getDefaultScreenDevice();
-	var rect = defaultScreen.getDefaultConfiguration().getBounds();
-	var x = rect.getMaxX() - _frame_Width;
-	var y = 0;
-	macroFrame.setLocation(x, y);
-
-	// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
-	// Sets the window to be "always on top"
-	macroFrame.setAlwaysOnTop(true);
-	
-	//
-	//var _jEdit = Java.type('org.gjt.sp.jedit.jEdit');
-	//var _view = _jEdit.getActiveView();
 	// ===
 	var JPanel = Java.type("javax.swing.JPanel");
 	var JLabel = Java.type("javax.swing.JLabel");
@@ -79,6 +60,77 @@ with (javaImports) {
 
 	var File = Java.type("java.io.File");
 	var Toolkit = Java.type("java.awt.Toolkit");
+	// ==================================================================
+	var macroFrame = new JFrame("=STARTER :: JS :: 2019-09-29=");
+	//
+	var tk = Toolkit.getDefaultToolkit();
+	var scrDim = tk.getScreenSize();
+	var scrWidth = scrDim.width;
+	var scrHeight = scrDim.height;
+	
+	//print("screen: " + scrWidth + "x" + scrHeight);
+	// screen: 1280x720 // due to special trick with Java
+	
+	var _frame_Width;
+	var _frame_Height;
+	//
+	var viewWidth;
+	var viewHeight;
+	var _host;
+	//screen dimensions = "1366x768";   // HPP @home 
+	//screen dimensions = "1920x1080";   // DELL @home
+	//screen dimensions = "1680x1050";  // PHILIPS monitor @work
+	//screen dimensions = "1280x720"; // DELL @home with Java forced to see low resolution
+	if (scrWidth == 1680) {
+		_host = "desktop1680";
+		// this means that acroreader is ...70
+	} else {
+		_host = "laptop";
+		// this means that acroreader is ...DC;
+		// and selection of acroredae works well
+	}
+	//
+	if (scrWidth == 1280) {	
+		//_host = "laptop1280";
+		viewWidth = scrWidth - 60;  //view.x=79
+		viewHeight = scrHeight;
+		_frame_Width = 560;  //chosen by trial
+	}
+		
+	//if (scrWidth == 1366) {
+		//_host = "laptop1366";
+		viewWidth = scrWidth - 80;  //view.x=79
+		viewHeight = scrHeight;
+		//print(_host);
+	//} 
+	//else if (scrWidth == 1920) {	
+		//_host = "laptop1920";
+		//viewWidth = scrWidth - 80;  //view.x=79
+		//viewHeight = scrHeight;
+		//_frame_Width = 845;
+		//print(_host);
+	//} 
+	
+	//else {
+		//_host = "desktop";
+//viewWidth = scrWidth; //1686;
+		//viewHeight = scrHeight - 30; //1020;
+		//_frame_Width = 600;
+		//print(_host + "   " + scrWidth);
+	//}
+	//
+	macroFrame.setSize(_frame_Width, _frame_Height);
+	var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	var defaultScreen = ge.getDefaultScreenDevice();
+	var rect = defaultScreen.getDefaultConfiguration().getBounds();
+	var x = rect.getMaxX() - _frame_Width;
+	var y = 0;
+	macroFrame.setLocation(x, y);
+
+	// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
+	// Sets the window to be "always on top"
+	macroFrame.setAlwaysOnTop(true);
+	
 	// ===
 	var _rt = Runtime.getRuntime();
 	//
@@ -94,10 +146,14 @@ with (javaImports) {
 	var _sevenz_command = "x";             // eXtract files with full paths
 	var _sevenz_switch_dir = "-o";         // -o{Directory} : set Output directory
 	var _sevenz_switch_overwrite = "-aoa"; // Overwrite All existing files without prompt
+	var markButtonCloseFiles = false;
 		// ================
 
-	function createTabPaneMain()
+	// conveniency name for the main function of the script:
+	function panelMain()
 	{
+		var panelForTabbedPane = new JPanel();
+		// for plugin, the overall panel must be just JPanel
 		var tabPaneMain = new JTabbedPane();
 		//tabPane.setTabPlacement(TOP); // nutylima
 		// ...,tabPlacement=TOP]
@@ -111,8 +167,8 @@ with (javaImports) {
 		tabPaneMain.addTab("About", pnAbout);
 
 		tabPaneMain.setSelectedComponent(pnQcTool);
-
-		return tabPaneMain;
+		panelForTabbedPane.add(tabPaneMain);
+		return panelForTabbedPane;
 	}
 
 	function createPaneArticleData()
@@ -421,6 +477,20 @@ with (javaImports) {
 
 	function createPaneQcTool()
 	{
+		// default:
+		//_host = "desktop";
+		var adobeReaderDC = "C:/Program Files (x86)/Adobe/Acrobat Reader DC/Reader/AcroRd32.exe";
+		var adobeReader70 = "C:/Program Files/Adobe/Acrobat 7.0/Reader/AcroRd32.exe";
+		var _adobeReader;
+		var _taskkill;
+		if (_host == "desktop1680") {
+			_adobeReader = adobeReader70;
+			_taskkill = "C:/Windows/System32/taskkill.exe";
+		} else {
+			//_host = "laptop";
+			_adobeReader = adobeReaderDC;
+			_taskkill = "C:/Windows/SysWOW64/taskkill.exe";
+		}
 		var jEdit = Java.type('org.gjt.sp.jedit.jEdit');
 		var view = jEdit.getActiveView();
 
@@ -433,7 +503,11 @@ with (javaImports) {
 		//
 		var labelMasterFolder = new JLabel("Master Folder ");
 		var textFieldMasterFolder = new JTextField(25);
-		textFieldMasterFolder.setText("");
+		//
+		var nameMasterFolder = "D:\\vtex\\_sqc\\08 MN August\\0";
+		textFieldMasterFolder.setText(nameMasterFolder);
+		masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
+		//
 		var buttonMasterFolder = new JButton("Choose Folder");
 		//
 		var labelPathToItem = new JLabel("Path To Item ");
@@ -443,64 +517,39 @@ with (javaImports) {
 		//
 		var labelItemId = new JLabel("ITEM9999 ");
 		labelItemId.setToolTipText("Item in check or just checked");
-		////var buttonOpenFiles = new JButton("Open Files For Check");
-		////var buttonClear = new JButton("Clear");
 		//
 		var buttonCloseFiles = new JButton("Close Files");
+		buttonCloseFiles.setEnabled(false);
 		var buttonOrigFiles = new JButton("Open Orig. PDFs");
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
 		textFieldIsDone.setMaximumSize(new Dimension(25,30));
 		textFieldIsDone.setPreferredSize(new Dimension(20,30));
 		//
+		var labelItemPosition = new JLabel("Item Position ");
+		var textFieldItemPosition = new JTextField(25);
+		textFieldItemPosition.setText("");
+		var buttonNextItem = new JButton("Next Item");
+		//
+		var labelNotes = new JLabel("Notes ");
+		var textFieldNotes = new JTextField(25);
+		//
 		var openFilesColor = new Color(0x99ff99)   // 0x00cc33 0x99ff99
-		var closeFilesColor = new Color(0xff0000)  // 0xff0000
+		var closeFilesColor = new Color(0xff6633)  // 0xff0000
 		var extractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
 		buttonBrowsePath.setBackground(openFilesColor);
 		buttonCloseFiles.setBackground(closeFilesColor);
 		buttonExtractBz2.setBackground(extractBz2Color);
 		textFieldIsDone.setBackground(extractBz2Color);
+		buttonNextItem.setBackground(openFilesColor);
+		
+		var masterFolderItemsList;  // list of all 'items' in the master folder
+		var currentItemPosition;  // position of the current item in this list
+		var ip;
 
-		var nameMasterFolder = "D:\\_vtex-els--sqc\\__M-N-factors-2018";
-		//"D:\\_vtex-els--sqc";
 		var nameItemFolder;
 		var processExternal;
-
-		var tk = Toolkit.getDefaultToolkit();
-		var scrDim = tk.getScreenSize();
-		var scrWidth = scrDim.width;
-		var scrHeight = scrDim.height;
-		//screen dimensions = "1366x768";   // HPP @home
-		//screen dimensions = "1680x1050";  // PHILIPS monitor @work
-		var _host;
-		// C:\Program Files\Adobe\Acrobat 7.0\Reader\AcroRd32.exe
-		var _adobeReader;
-		var adobeReaderHome = "C:/Program Files (x86)/Adobe/Acrobat Reader DC/Reader/AcroRd32.exe";
-		var adobeReaderWork = "C:/Program Files/Adobe/Acrobat 7.0/Reader/AcroRd32.exe";
-		var _taskkill;
-		//
-		var viewWidth;
-		var viewHeight;
-		if (scrWidth == 1366) {
-			_host = "laptop";
-			viewWidth = scrWidth - 80;  //view.x=79
-			viewHeight = scrHeight;
-			_adobeReader = adobeReaderHome;
-			_taskkill = "C:/Windows/System32/taskkill.exe";
-		} else {
-			_host = "desktop";
-			viewWidth = scrWidth; //1686;
-			viewHeight = scrHeight - 30; //1020;
-			_adobeReader = adobeReaderWork;
-			_taskkill = "C:/Windows/SysWOW64/taskkill.exe";  // ??
-		}
-		// laptop: view.width=1288
-		// laptop: view.height=767
-		// laptop: view.y=0
-		// laptop: view.x=79
-
 		// --- jEdit views - buffers ---
-		//var _view = _jEdit.getActiveView();
 		var newVcfgA;
 		var newVcfgB;
 		var viewTeX;
@@ -508,18 +557,34 @@ with (javaImports) {
 		//
 		var vcfg = view.getViewConfig();
 		var viewConfig = Java.type('org.gjt.sp.jedit.View.ViewConfig');
-		if (_host == "desktop") {
+		if (scrWidth == 1680) {
+			// _host == "desktop"
 			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
 				0, 0, viewWidth, viewHeight, vcfg.extState);
 			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
 				200, 0, viewWidth - 200, viewHeight, vcfg.extState);
 		}
-		if (_host == "laptop") {
+		if (scrWidth == 1280) {
+			// _host == "laptop1280"
+			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
+				60, 0, viewWidth, viewHeight, vcfg.extState); // x -- width of OS vertical
+			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
+				180, 0, viewWidth - 110, viewHeight, vcfg.extState);  //90 -- by trial
+		}
+		/*
+		if (_host == "laptop1366") {
+			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
+				80, 0, viewWidth, viewHeight, vcfg.extState);
+			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
+				220, 0, viewWidth - 140, viewHeight, vcfg.extState);
+		} 
+		if (_host == "laptop1920") { // DELL
 			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
 				80, 0, viewWidth, viewHeight, vcfg.extState);
 			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
 				220, 0, viewWidth - 140, viewHeight, vcfg.extState);
 		}
+		*/
 
 	//{{{ //~~~ GridBagLayout
 		var gbl = new GridBagLayout();
@@ -597,6 +662,35 @@ with (javaImports) {
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(textFieldIsDone, gbc);
+		// ===
+		//(4, 0) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		paneHelper.add(labelItemPosition, gbc);
+		// (4, 1) position
+		gbc.weightx = 0.5; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 4;
+		paneHelper.add(textFieldItemPosition, gbc);
+		// (4, 2) position
+		gbc.weightx = 1.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 4;
+		gbc.gridwidth = 1;
+		//gbc.fill = GridBagConstraints.NONE;
+		paneHelper.add(buttonNextItem, gbc);
+		// ===
+		//(5, 0) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		paneHelper.add(labelNotes, gbc);
+		// (5, 1) position
+		gbc.weightx = 0.5; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 5;
+		paneHelper.add(textFieldNotes, gbc);
 		// }}}
 
 		// Listeners:
@@ -616,6 +710,8 @@ with (javaImports) {
 					pathMf = chooserMf.getSelectedFile().getAbsolutePath();
 					textFieldMasterFolder.setText(pathMf);
 					nameMasterFolder = pathMf;
+					masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
+					textFieldItemPosition.setText("");
 				}
 		});
 		//}}}
@@ -635,7 +731,8 @@ with (javaImports) {
 				chooserD.setApproveButtonText("O P E N");
 				chooserD.setApproveButtonToolTipText("Open prescribed files belonging to the item.");
 				chooserD.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				chooserD.setPreferredSize(new Dimension(1050, 520));  // (780, 640)
+				// we want "15 lines x 10 columns" layout of items in 'O P E N' window"
+				chooserD.setPreferredSize(new Dimension(1100, 510));  // (780, 640) 
 				var returnValueD = chooserD.showOpenDialog(null);
 				if (returnValueD == JFileChooser.APPROVE_OPTION) {
 					pathD = chooserD.getSelectedFile().getAbsolutePath();
@@ -643,24 +740,50 @@ with (javaImports) {
 					nameItemFolder = pathD;
 					//
 					openItemRelatedFiles(pathD);
+					for (ip = 0; ip < masterFolderItemsList.length; ip++) {
+						if (nameItemFolder == masterFolderItemsList[ip].toString()) {
+							currentItemPosition = ip;
+							textFieldItemPosition.setText(currentItemPosition);
+						}
+					}
 				}
+		});
+		//}}}
+		//{{{ //~~~ buttonNextItem.addActionListener
+		buttonNextItem.addActionListener(
+			// actions needed: (1) close all files; (2) open next item files
+			function() {
+				if (markButtonCloseFiles) {
+					buttonCloseFilesFunction();
+				}
+				//
+				var pathD;
+				currentItemPosition = currentItemPosition + 1;
+				if (currentItemPosition >= masterFolderItemsList.length) {
+					alert("This was the last item in the master folder.");
+				}
+				pathD = masterFolderItemsList[currentItemPosition].toString();
+				nameItemFolder = pathD;
+				textFieldPathToItem.setText(pathD);
+				openItemRelatedFiles(pathD);
+				textFieldItemPosition.setText(currentItemPosition);
 		});
 		//}}}
 		//
 		
 	//{{{ //~~~ extractArchiveSevenZ
- 		function extractArchiveSevenZ(archivePath, tmpDir) {
- 			// Function for code reuse.	
- 			// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
- 			var cll = [];
- 			cll.push(_sevenz);
+		function extractArchiveSevenZ(archivePath, tmpDir) {
+			// Function for code reuse.	
+			// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
+			var cll = [];
+			cll.push(_sevenz);
 			cll.push("x");
 			cll.push(archivePath);
 			cll.push("-aoa");
 			cll.push("-o" + tmpDir);
 			runExternalApp(cll, true);
- 		}
- 	// }}}	
+		}
+	// }}}	
 	//{{{ //~~~ viewPDFFilesAdobeReader	
 		function viewPDFFilesAdobeReader(pdfFileList) {
 			// Function for code reuse.
@@ -712,7 +835,6 @@ with (javaImports) {
 			// ...S[200|250]\\_remarks\.txt   (if any)
 			// ...S[200|250]\\(.*?)_S[200|250]\.xml
 
-			//function () {
 			var synctexFound = false;
 			//var remarksFound = false;
 			var reSync = "(.*)\\\\(.*?)\.synctex\.gz$";
@@ -825,10 +947,12 @@ with (javaImports) {
 			}
 			//after loop
 			if (S200Found && S250Found) {
-				alert("Both S200 and S250 found.");
+				//alert("Both S200 and S250 found.");
+				textFieldNotes.setText("Both S200 and S250 found.");
 			}
 			if (resupplyFound) {
-				alert("RESUPPLY found.");
+				//alert("RESUPPLY found.");
+				textFieldNotes.setText("RESUPPLY found.");
 			}
 			//
 			var buffersB;
@@ -929,7 +1053,8 @@ with (javaImports) {
 				viewPDFFilesAdobeReader(pdfs);
 			}
 			else {
-				alert("SkyLaTeX output files not found.");
+				//alert("SkyLaTeX output files not found.");
+				textFieldNotes.setText("SkyLaTeX output files not found.");
 				for (k = 0; k < entriesHArray.length; k++) {
 					qhh = entriesHArray[k];
 					// qhh.name is java.io.File, not String
@@ -996,7 +1121,8 @@ with (javaImports) {
 			else {
 				labelItemId.setText("ITEM9999");
 			}
-
+			buttonCloseFiles.setEnabled(true);
+			markButtonCloseFiles = true;
 		}
 
 	//{{{	//~~~ buttonExtractBz2.addActionListener
@@ -1092,6 +1218,11 @@ with (javaImports) {
 		
 	//{{{ //~~~ buttonCloseFiles.addActionListener
 		buttonCloseFiles.addActionListener(
+			function() {
+				buttonCloseFilesFunction();
+			}
+		);
+		function buttonCloseFilesFunction() {
 			/**
 			https://stackoverflow.com/questions/5085491/closing-an-instance-of-acrobat-reader-from-command-line#
 			You cannot close the last open Acrobat window through the command line. From ancient history of
@@ -1106,46 +1237,48 @@ with (javaImports) {
 			?
 			https://www.reddit.com/r/techsupport/comments/2p60b5/cant_run_the_taskkill_command_on_a_batch_file/
 			*/
-			function() {
-				var Run = Java.type("java.lang.Runnable");
-				var RunClosing = Java.extend(Run, {
-						run: function() {
-							var alst = [];
-							alst.push("cmd.exe");
-							alst.push("/C");
-							alst.push(_taskkill);
-							alst.push("/F");
-							alst.push("/IM");
-							//alst.push(_adobeReader);
-							alst.push("AcroRd32.exe");  // THIS works!
-							runExternalApp(alst, true);
-						}
-				});
-				var ThreadClosing = Java.type("java.lang.Thread");
-				var thClosing = new ThreadClosing(new RunClosing());
-				try {
-					thClosing.start();
-					thClosing.join();  // Waits for this thread to die.
-				} catch (exception) {
-					alert(exception);
-				}
-				//
-				var allViews = jEdit.getViews();
-				var t;
-				for (t = 0; t < allViews.length; t++) {
-					if ( (allViews[t].title.substring(0,5) == "txt /") || // "txt / XML"   // "init & TeX"
-						 (allViews[t].title.substring(0,6) == "init &") ) {
-						jEdit.closeView(allViews[t]);
+			var Run = Java.type("java.lang.Runnable");
+			var RunClosing = Java.extend(Run, {
+					run: function() {
+						var alst = [];
+						alst.push("cmd.exe");
+						alst.push("/C");
+						alst.push(_taskkill);
+						alst.push("/F");
+						alst.push("/IM");
+						//alst.push(_adobeReader);
+						alst.push("AcroRd32.exe");  // THIS works!
+						runExternalApp(alst, true);
 					}
-				}
-				var allBuffers = jEdit.getBuffers();
-				for (t = 0; t < allBuffers.length; t++) {
-					if (allBuffers[t].getName().substring(0,7) != "starter") {
-						jEdit.closeBuffer(view, allBuffers[t]);
-					}
+			});
+			var ThreadClosing = Java.type("java.lang.Thread");
+			var thClosing = new ThreadClosing(new RunClosing());
+			try {
+				thClosing.start();
+				thClosing.join();  // Waits for this thread to die.
+			} catch (exception) {
+				alert(exception);
+			}
+			//
+			var allViews = jEdit.getViews();
+			var t;
+			for (t = 0; t < allViews.length; t++) {
+				//alert("t = " + t + ", title: " + allViews[t].title);
+				if ( (allViews[t].title.substring(0,5) == "txt /") || // "txt / XML"   // "init & TeX"
+					 (allViews[t].title.substring(0,6) == "init &") ) {
+					jEdit.closeView(allViews[t]);
 				}
 			}
-		);
+			var allBuffers = jEdit.getBuffers();
+			for (t = 0; t < allBuffers.length; t++) {
+				if (allBuffers[t].getName().substring(0,7) != "starter") {
+					jEdit.closeBuffer(view, allBuffers[t]);
+				}
+			}
+			buttonCloseFiles.setEnabled(false);
+			markButtonCloseFiles = false;
+			textFieldNotes.setText("");
+		}
 		// }}}
 		
 		// Tooltips
@@ -1245,7 +1378,7 @@ with (javaImports) {
 
 	// ==================================================================
 	// === createComponents()
-	macroFrame.getContentPane().add(createTabPaneMain()); //, _BorderLayout.CENTER);
+	macroFrame.getContentPane().add(panelMain()); //, _BorderLayout.CENTER);
 		// frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
 		// Tokiu budu, uzdarant sios programos langa, jEdit neuzsidaro:
 		//frame.setDefaultCloseOperation(_.WindowConstants.DISPOSE_ON_CLOSE);

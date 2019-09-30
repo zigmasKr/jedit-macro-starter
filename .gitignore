@@ -8,6 +8,7 @@
 
 # Readings
 [readings]/*
+[sandbox]/*
 
 # Other code testing scripts:
 *0.js
