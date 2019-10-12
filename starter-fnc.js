@@ -1290,16 +1290,24 @@ with (javaImports) {
 	
 	function createPaneAbout()
 	{
-		var paneAboutOuter = new JPanel();
-		var textAreaAbout = new JTextArea("Developed:\n2017.01.03-2018.09.10;\n2018.11.23");  
-		var scrollPane = new JScrollPane(textAreaAbout);
-		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		//scrollPane.setPreferredSize(new Dimension(250, 250));
-		var paneAbout = new JPanel();
-		paneAbout.setSize(600, 400); // width, height
-		paneAbout.add(scrollPane);
-		paneAboutOuter.add(paneAbout);
-		return paneAboutOuter;
+		var aboutString = "=STARTER :: JS :: 2019-09-29=" 
+		aboutString = aboutString + "\nLatest changes:"; 
+		aboutString = aboutString + "\n2019.09.29-30: Button 'Next'.";
+		aboutString = aboutString + "\nEarly history: 2017.01.03-2018.09.10; 2018.11.23";
+		//var aboutPaneOuter = new JPanel();
+		var aboutArea = new JTextArea();
+		var aboutPane = new JPanel();
+		//aboutPane.setSize(600, 400); // width, height
+		//aboutArea.setBounds(0, 0, 20, 20); 
+		aboutArea.setWrapStyleWord(true);
+		aboutArea.append(aboutString);
+		var scrollPane = new JScrollPane(aboutArea);
+		//scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); // default
+		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);  // default
+		scrollPane.setPreferredSize(new Dimension(200, 100));
+		aboutPane.add(scrollPane);
+		//aboutPaneOuter.add(aboutPane);
+		return scrollPane; // aboutPaneOuter;
 	}
 
 	//{{{	//~~~ runExternalApp
