@@ -493,6 +493,9 @@ with (javaImports) {
 		}
 		var jEdit = Java.type('org.gjt.sp.jedit.jEdit');
 		var view = jEdit.getActiveView();
+		// for any sake: it may happen that perspective.xml gets <TITLE>txt / XML - </TITLE>
+		// and the following code forces to close jEdit
+		view.setUserTitle("jEdit");
 
 		// To make "paneArticleData" somehow stable in size, it is put onto another JPanel
 		// with the desirable or "default" layout.
@@ -504,7 +507,7 @@ with (javaImports) {
 		var labelMasterFolder = new JLabel("Master Folder ");
 		var textFieldMasterFolder = new JTextField(25);
 		//
-		var nameMasterFolder = "D:\\vtex\\_sqc\\08 MN August\\0";
+		var nameMasterFolder = "D:\\_vtex-els--sqc\\__M-N-factors-2019\\09 MN September\\0";
 		textFieldMasterFolder.setText(nameMasterFolder);
 		masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
 		//
@@ -742,7 +745,7 @@ with (javaImports) {
 					openItemRelatedFiles(pathD);
 					for (ip = 0; ip < masterFolderItemsList.length; ip++) {
 						if (nameItemFolder == masterFolderItemsList[ip].toString()) {
-							currentItemPosition = ip;
+							currentItemPosition = ip + 1; // 1-based counter
 							textFieldItemPosition.setText(currentItemPosition);
 						}
 					}
@@ -1018,8 +1021,8 @@ with (javaImports) {
 				var newEmpty = jEdit.newFile(view); // Buffer
 				var t;
 				for (t = 0; t < allViews.length; t++) {
-					if ( (allViews[t].title == "txt / XML") ||
-						 (allViews[t].title == "init & TeX") ) {
+					if ( (allViews[t].title.substring(0,9) == "txt / XML") ||
+						 (allViews[t].title.substring(0,10) == "init & TeX") ) {
 						jEdit.closeView(allViews[t]);
 					}
 				}
@@ -1087,8 +1090,8 @@ with (javaImports) {
 				var newEmpty = jEdit.newFile(view); // Buffer
 				var t;
 				for (t = 0; t < allViews.length; t++) {
-					if ( (allViews[t].title.substring(0,5) == "txt /") || // "txt / XML"   // "init & TeX"
-						 (allViews[t].title.substring(0,6) == "init &") ) {
+					if ( (allViews[t].title.substring(0,9) == "txt / XML") || // "txt / XML"   // "init & TeX"
+						 (allViews[t].title.substring(0,10) == "init & TeX") ) {
 						jEdit.closeView(allViews[t]);
 					}
 				}
@@ -1290,7 +1293,7 @@ with (javaImports) {
 	
 	function createPaneAbout()
 	{
-		var aboutString = "=STARTER :: JS :: 2019-09-29=" 
+		var aboutString = "=STARTER :: JS :: 2019-10-21=" 
 		aboutString = aboutString + "\nLatest changes:"; 
 		aboutString = aboutString + "\n2019.09.29-30: Button 'Next'.";
 		aboutString = aboutString + "\nEarly history: 2017.01.03-2018.09.10; 2018.11.23";
