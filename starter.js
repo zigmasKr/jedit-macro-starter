@@ -74,26 +74,22 @@ with (javaImports) {
 	var File = Java.type("java.io.File");
 	var Toolkit = Java.type("java.awt.Toolkit");
 	// ==================================================================
-	var macroFrame = new JFrame("=STARTER :: JS :: 2019-10-23=");
+	var macroFrame = new JFrame("=STARTER :: JS :: 2019-11-05=");
 	//
 	var tk = Toolkit.getDefaultToolkit();
 	var scrDim = tk.getScreenSize();
 	var scrWidth = scrDim.width;
 	var scrHeight = scrDim.height;
-	
-	//print("screen: " + scrWidth + "x" + scrHeight);
-	// screen: 1280x720 // due to special trick with Java
-	
-	var _frame_Width;
-	var _frame_Height;
+	// DELL @home (actual screen 1920x1080):
+	// scrWidth  = 1280; scrHeight = 720
+	// due to special trick with Java forced to see low resolution
+	//
+	//screen dimensions = "1366x768";   // HPP @home 
+	//screen dimensions = "1680x1050";  // PHILIPS monitor @work
 	//
 	var viewWidth;
 	var viewHeight;
 	var _host;
-	//screen dimensions = "1366x768";   // HPP @home 
-	//screen dimensions = "1920x1080";   // DELL @home
-	//screen dimensions = "1680x1050";  // PHILIPS monitor @work
-	//screen dimensions = "1280x720"; // DELL @home with Java forced to see low resolution
 	if (scrWidth == 1680) {
 		_host = "desktop1680";
 		// this means that acroreader is ...70
@@ -102,47 +98,6 @@ with (javaImports) {
 		// this means that acroreader is ...DC;
 		// and selection of acroredae works well
 	}
-	//
-	if (scrWidth == 1280) {	
-		//_host = "laptop1280";
-		viewWidth = scrWidth - 60;  //view.x=79
-		viewHeight = scrHeight;
-		_frame_Width = 560;  //chosen by trial
-	}
-		
-	//if (scrWidth == 1366) {
-		//_host = "laptop1366";
-		viewWidth = scrWidth - 80;  //view.x=79
-		viewHeight = scrHeight;
-		//print(_host);
-	//} 
-	//else if (scrWidth == 1920) {	
-		//_host = "laptop1920";
-		//viewWidth = scrWidth - 80;  //view.x=79
-		//viewHeight = scrHeight;
-		//_frame_Width = 845;
-		//print(_host);
-	//} 
-	
-	//else {
-		//_host = "desktop";
-//viewWidth = scrWidth; //1686;
-		//viewHeight = scrHeight - 30; //1020;
-		//_frame_Width = 600;
-		//print(_host + "   " + scrWidth);
-	//}
-	//
-	macroFrame.setSize(_frame_Width, _frame_Height);
-	var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	var defaultScreen = ge.getDefaultScreenDevice();
-	var rect = defaultScreen.getDefaultConfiguration().getBounds();
-	var x = rect.getMaxX() - _frame_Width;
-	var y = 0;
-	macroFrame.setLocation(x, y);
-
-	// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
-	// Sets the window to be "always on top"
-	macroFrame.setAlwaysOnTop(true);
 	
 	// ===
 	var Thread = Java.type("java.lang.Thread");
@@ -523,19 +478,22 @@ with (javaImports) {
 		textFieldMasterFolder.setText(nameMasterFolder);
 		masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
 		//
-		var buttonMasterFolder = new JButton("Choose Folder");
+		var buttonMasterFolder = new JButton("Choose Folder"); 
+		//buttonMasterFolder.setMaximumSize(new Dimension(10, 15)); //setSize(10, 10);
 		//
 		var labelPathToItem = new JLabel("Path To Item ");
 		var textFieldPathToItem = new JTextField(25);
 		textFieldPathToItem.setText("");
 		var buttonChooseItem = new JButton("Choose Item");
+		//buttonChooseItem.setMaximumSize(new Dimension(10, 15)); 
 		//
 		var labelItemId = new JLabel("ITEM9999 ");
 		labelItemId.setToolTipText("Item in check or just checked");
 		//
 		var buttonCloseFiles = new JButton("Close Files");
 		buttonCloseFiles.setEnabled(false);
-		var buttonOrigFiles = new JButton("Open Orig. PDFs");
+		var buttonOrigFiles = new JButton("Open Orig. PDFs"); 
+		//buttonOrigFiles.setMaximumSize(new Dimension(10, 15));
 		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
 		var textFieldIsDone = new JTextField(12);
 		textFieldIsDone.setMaximumSize(new Dimension(25,30));
@@ -545,6 +503,8 @@ with (javaImports) {
 		var textFieldItemPosition = new JTextField(25);
 		textFieldItemPosition.setText("");
 		var buttonNextItem = new JButton("Next Item");
+		buttonNextItem.setMaximumSize(new Dimension(10, 15));
+		
 		//
 		var labelNotes = new JLabel("Notes ");
 		var textFieldNotes = new JTextField(25);
@@ -562,12 +522,14 @@ with (javaImports) {
 		var labelExcel = new JLabel("Excel QC List");
 		var textFieldExcelFile = new JTextField(25);
 		var buttonChooseExcel = new JButton("Choose Excel");
+		//buttonChooseExcel.setMaximumSize(new Dimension(10, 15));
 		var labelPageType = new JLabel("Page type ");
 		
 		var textFieldPageType = new JTextField(25);
 		var labelPageNumber = new JLabel("Page number ");
 		var textFieldPageNumber = new JTextField(25);
 		var buttonWriteToExcel = new JButton("Write to Excel");
+		//buttonWriteToExcel.setMaximumSize(new Dimension(10, 15));
 		var isExcelChosen = false;   // global mark
 		var isExcelFileWritten = false; // global mark
 		var excelColor = new Color(0x99cc00);
@@ -657,7 +619,7 @@ with (javaImports) {
 		paneHelper.add(labelMasterFolder, gbc);
 		//
 		// (0, 1) position
-		gbc.weightx = 0.5; //0.5
+		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 1;
 		gbc.gridy = 0;
 		paneHelper.add(textFieldMasterFolder, gbc);
@@ -1712,16 +1674,37 @@ with (javaImports) {
 
 	// ==================================================================
 	// === createComponents()
-	macroFrame.getContentPane().add(panelMain()); //, _BorderLayout.CENTER);
+	
+	var panelM = panelMain();
+	// dimensions are chosen for 1280x720 by trial:
+	panelM.setPreferredSize(new Dimension(560, 290));
+	panelM.setMaximumSize(new Dimension(560, 290));
+	panelM.setMinimumSize(new Dimension(560, 290));
+		
+	macroFrame.getContentPane().add(panelM); 
+		//, _BorderLayout.CENTER);
 		// frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
-		// Tokiu budu, uzdarant sios programos langa, jEdit neuzsidaro:
-		//frame.setDefaultCloseOperation(_.WindowConstants.DISPOSE_ON_CLOSE);
-	//frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		// In this way, closing this frame, jEdit is not closed:
+		//frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		//frame.setDefaultCloseOperation(2);
 		// 2 corresponds DISPOSE_ON_CLOSE, see
 		// http://docs.oracle.com/javase/7/docs/api/constant-values.html#javax.swing.WindowConstants.DISPOSE_ON_CLOSE
 	macroFrame.pack();
 	macroFrame.setVisible(true);
+	// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
+	// Sets the window to be "always on top"
+	macroFrame.setAlwaysOnTop(true);
+	// Position the frame:
+	macroFrame.setMaximumSize(new Dimension(520, 520));
+	var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	var defaultScreen = ge.getDefaultScreenDevice();
+	var rect = defaultScreen.getDefaultConfiguration().getBounds();
+	var frameWidth = macroFrame.getWidth();
+	//alert("frame width: " + frameWidth);
+	var x = rect.getMaxX() - frameWidth;
+	//alert("x: " + x);
+	var y = 0;
+	macroFrame.setLocation(x, y);
 
 }
 
