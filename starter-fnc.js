@@ -51,7 +51,9 @@ var javaImports = new JavaImporter(
 	org.apache.poi.ss.usermodel.Row,
 	org.apache.poi.ss.usermodel.Row.MissingCellPolicy,
 	org.apache.poi.xssf.usermodel.XSSFSheet,
-	org.apache.poi.xssf.usermodel.XSSFWorkbook
+	org.apache.poi.xssf.usermodel.XSSFWorkbook,
+	
+	org.apache.commons.io.FileUtils
 	);
 
 with (javaImports) {
@@ -73,31 +75,20 @@ with (javaImports) {
 
 	var File = Java.type("java.io.File");
 	var Toolkit = Java.type("java.awt.Toolkit");
+	//
 	// ==================================================================
-	var macroFrame = new JFrame("=STARTER :: JS :: 2019-11-05=");
 	//
 	var tk = Toolkit.getDefaultToolkit();
 	var scrDim = tk.getScreenSize();
+	//alert(scrDim);
 	var scrWidth = scrDim.width;
 	var scrHeight = scrDim.height;
-	// DELL @home (actual screen 1920x1080):
+	// DELL@Win10 (actual screen 1920x1080):
 	// scrWidth  = 1280; scrHeight = 720
 	// due to special trick with Java forced to see low resolution
 	//
-	//screen dimensions = "1366x768";   // HPP @home 
-	//screen dimensions = "1680x1050";  // PHILIPS monitor @work
-	//
-	var viewWidth;
-	var viewHeight;
-	var _host;
-	if (scrWidth == 1680) {
-		_host = "desktop1680";
-		// this means that acroreader is ...70
-	} else {
-		_host = "laptop";
-		// this means that acroreader is ...DC;
-		// and selection of acroredae works well
-	}
+	//screen dimensions = "1366x768";   // HPP @home; Win10 Home 
+	//screen dimensions = "1680x1050";  // PHILIPS monitor @work; Win10 Pro
 	
 	// ===
 	var Thread = Java.type("java.lang.Thread");
@@ -110,33 +101,9 @@ with (javaImports) {
 	var _outputTempDir = "d:\\works\\articledata\\temp\\";
 	// SQC Helper:
 	var _sevenz = "C:\\PROGRA~1\\7-Zip\\7z.exe";
-	var _sevenz_command = "x";             // eXtract files with full paths
-	var _sevenz_switch_dir = "-o";         // -o{Directory} : set Output directory
-	var _sevenz_switch_overwrite = "-aoa"; // Overwrite All existing files without prompt
 	var markButtonCloseFiles = false;
-		// ================
-
-	// conveniency name for the main function of the script:
-	function panelMain()
-	{
-		var panelForTabbedPane = new JPanel();
-		// for plugin, the overall panel must be just JPanel
-		var tabPaneMain = new JTabbedPane();
-		//tabPane.setTabPlacement(TOP); // nutylima
-		// ...,tabPlacement=TOP]
-		var pnArticleData = createPaneArticleData();
-		tabPaneMain.addTab("Article Data", pnArticleData);
-		//
-		var pnQcTool = createPaneQcTool();
-		tabPaneMain.addTab("QC Tool", pnQcTool);
-		//
-		var pnAbout = createPaneAbout();
-		tabPaneMain.addTab("About", pnAbout);
-
-		tabPaneMain.setSelectedComponent(pnQcTool);
-		panelForTabbedPane.add(tabPaneMain);
-		return panelForTabbedPane;
-	}
+	
+	// ================
 
 	function createPaneArticleData()
 	{
@@ -178,7 +145,7 @@ with (javaImports) {
 		buttonRun.setBackground(buttonRunBackgroundColor);
 		//buttonRun.setBackground(Color.green);
 
-	//{{{ //~~~ GridBagLayout
+	//{{{ //~~~ GridBagLayout  in createPaneArticleData
 		var gbl = new GridBagLayout();
 		var gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -441,20 +408,64 @@ with (javaImports) {
 		// ======
 		return paneArticleDataOuter;
 	}
+	
 
+	// =====
+	// Variables common to createPaneQcTool and createPaneQcFiles: 	
+	try {
+		var FileInputStream = Java.type("java.io.FileInputStream"); 
+		var FileOutputStream = Java.type("java.io.FileOutputStream"); 
+		var XSSFWorkbook = Java.type("org.apache.poi.xssf.usermodel.XSSFWorkbook");
+		var XSSFSheet = Java.type("org.apache.poi.xssf.usermodel.XSSFSheet");
+		var ZipSecureFile = Java.type("org.apache.poi.openxml4j.util.ZipSecureFile");
+		var XSSFRow = Java.type("org.apache.poi.xssf.usermodel.XSSFRow");
+		var DataFormatter = Java.type("org.apache.poi.ss.usermodel.DataFormatter");
+		var UmRow = Java.type("org.apache.poi.ss.usermodel.Row");
+		var MissingCellPolicy = Java.type("org.apache.poi.ss.usermodel.Row.MissingCellPolicy");
+		var FileUtilsApache = Java.type("org.apache.commons.io.FileUtils");
+	} catch (excc) {
+		println(excc);
+	}
+	var Integer = Java.type("java.lang.Integer");
+	
+	var labelMasterFolder = new JLabel("Master Folder ");
+	var textFieldMasterFolder = new JTextField(25);  // length or width
+	var textFieldItemPosition = new JTextField(25);
+	var textFieldExcelFile = new JTextField(25);
+	//
+	var nameMasterFolder = "D:\\_vtex-els--sqc\\__M-N-factors-2019\\09 MN September\\0";
+	// list of all 'items' in the master folder:
+	var masterFolderItemsList; 
+	var isMasterFolderChosen = false;
+	//
+	var isExcelChosen = false;   // global mark
+	var isExcelFileWritten = false; // global mark
+	var excelColor = new Color(0x99cc00);
+	// =====
+	
+	
 	function createPaneQcTool()
 	{
-		// default:
-		//_host = "desktop";
+		var machine;
+		if (scrWidth == 1680) {
+			machine = "desktop1680";
+			// this means that acroreader is ...70
+		} else {
+			machine = "laptop";
+			// this means that acroreader is ...DC;
+			// and selection of acroreader works well;
+			// in case of DELL@Win10, screen width = 1280, height = 720
+		}
+		// default: machine = "desktop";
 		var adobeReaderDC = "C:/Program Files (x86)/Adobe/Acrobat Reader DC/Reader/AcroRd32.exe";
 		var adobeReader70 = "C:/Program Files/Adobe/Acrobat 7.0/Reader/AcroRd32.exe";
 		var _adobeReader;
 		var _taskkill;
-		if (_host == "desktop1680") {
+		if (machine == "desktop1680") {
 			_adobeReader = adobeReader70;
 			_taskkill = "C:/Windows/System32/taskkill.exe";
 		} else {
-			//_host = "laptop";
+			//machine = "laptop";
 			_adobeReader = adobeReaderDC;
 			_taskkill = "C:/Windows/SysWOW64/taskkill.exe";
 		}
@@ -464,28 +475,19 @@ with (javaImports) {
 		// and the following code forces to close jEdit
 		view.setUserTitle("jEdit");
 
-		// To make "paneArticleData" somehow stable in size, it is put onto another JPanel
+		// To make "paneHelper" somehow stable in size, it is put onto another JPanel
 		// with the desirable or "default" layout.
 		var paneHelperOuter = new JPanel();
 		var paneHelper = new JPanel();
 		//
 		paneHelperOuter.add(paneHelper);
 		//
-		var labelMasterFolder = new JLabel("Master Folder ");
-		var textFieldMasterFolder = new JTextField(25);
-		//
-		var nameMasterFolder = "D:\\_vtex-els--sqc\\__M-N-factors-2019\\09 MN September\\0";
-		textFieldMasterFolder.setText(nameMasterFolder);
-		masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
-		//
 		var buttonMasterFolder = new JButton("Choose Folder"); 
-		//buttonMasterFolder.setMaximumSize(new Dimension(10, 15)); //setSize(10, 10);
 		//
 		var labelPathToItem = new JLabel("Path To Item ");
 		var textFieldPathToItem = new JTextField(25);
 		textFieldPathToItem.setText("");
 		var buttonChooseItem = new JButton("Choose Item");
-		//buttonChooseItem.setMaximumSize(new Dimension(10, 15)); 
 		//
 		var labelItemId = new JLabel("ITEM9999 ");
 		labelItemId.setToolTipText("Item in check or just checked");
@@ -493,18 +495,10 @@ with (javaImports) {
 		var buttonCloseFiles = new JButton("Close Files");
 		buttonCloseFiles.setEnabled(false);
 		var buttonOrigFiles = new JButton("Open Orig. PDFs"); 
-		//buttonOrigFiles.setMaximumSize(new Dimension(10, 15));
-		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
-		var textFieldIsDone = new JTextField(12);
-		textFieldIsDone.setMaximumSize(new Dimension(25,30));
-		textFieldIsDone.setPreferredSize(new Dimension(20,30));
 		//
 		var labelItemPosition = new JLabel("Item Position ");
-		var textFieldItemPosition = new JTextField(25);
 		textFieldItemPosition.setText("");
 		var buttonNextItem = new JButton("Next Item");
-		buttonNextItem.setMaximumSize(new Dimension(10, 15));
-		
 		//
 		var labelNotes = new JLabel("Notes ");
 		var textFieldNotes = new JTextField(25);
@@ -514,59 +508,31 @@ with (javaImports) {
 		var extractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
 		buttonChooseItem.setBackground(openFilesColor);
 		buttonCloseFiles.setBackground(closeFilesColor);
-		buttonExtractBz2.setBackground(extractBz2Color);
-		textFieldIsDone.setBackground(extractBz2Color);
 		buttonNextItem.setBackground(openFilesColor);
 		
 		// for Excel:
-		var labelExcel = new JLabel("Excel QC List");
-		var textFieldExcelFile = new JTextField(25);
-		var buttonChooseExcel = new JButton("Choose Excel");
-		//buttonChooseExcel.setMaximumSize(new Dimension(10, 15));
 		var labelPageType = new JLabel("Page type ");
-		
 		var textFieldPageType = new JTextField(25);
 		var labelPageNumber = new JLabel("Page number ");
 		var textFieldPageNumber = new JTextField(25);
 		var buttonWriteToExcel = new JButton("Write to Excel");
-		//buttonWriteToExcel.setMaximumSize(new Dimension(10, 15));
-		var isExcelChosen = false;   // global mark
-		var isExcelFileWritten = false; // global mark
-		var excelColor = new Color(0x99cc00);
-		labelExcel.setOpaque(true);
+		
 		labelPageType.setOpaque(true);
 		labelPageNumber.setOpaque(true);
-		labelExcel.setBackground(excelColor);
 		labelPageType.setBackground(excelColor);
 		labelPageNumber.setBackground(excelColor);
-		buttonChooseExcel.setBackground(excelColor);
 		buttonWriteToExcel.setBackground(excelColor);
 		//var buttonTestExcel = new JButton("TEST EXCEL");
 		//buttonTestExcel.setBackground(excelColor);
 		var nameExcelFile;
 		var exclObj;
 		//
-		try {
-			var FileInputStream = Java.type("java.io.FileInputStream"); 
-			var FileOutputStream = Java.type("java.io.FileOutputStream"); 
-			var XSSFWorkbook = Java.type("org.apache.poi.xssf.usermodel.XSSFWorkbook");
-			var XSSFSheet = Java.type("org.apache.poi.xssf.usermodel.XSSFSheet");
-			var ZipSecureFile = Java.type("org.apache.poi.openxml4j.util.ZipSecureFile");
-			var XSSFRow = Java.type("org.apache.poi.xssf.usermodel.XSSFRow");
-			var DataFormatter = Java.type("org.apache.poi.ss.usermodel.DataFormatter");
-			var UmRow = Java.type("org.apache.poi.ss.usermodel.Row");
-			var MissingCellPolicy = Java.type("org.apache.poi.ss.usermodel.Row.MissingCellPolicy");
-		} catch (excc) {
-			print(excc);
-		}
-		var Integer = Java.type("java.lang.Integer");
-		
-		var masterFolderItemsList;  // list of all 'items' in the master folder
 		var currentItemPosition;  // position of the current item in this list
 		var ip;
 
 		var nameItemFolder;
 		var processExternal;
+		//
 		// --- jEdit views - buffers ---
 		var newVcfgA;
 		var newVcfgB;
@@ -574,219 +540,133 @@ with (javaImports) {
 		var viewTXml;
 		//
 		var vcfg = view.getViewConfig();
-		var viewConfig = Java.type('org.gjt.sp.jedit.View.ViewConfig');
+		var ViewConfig = Java.type('org.gjt.sp.jedit.View.ViewConfig');
 		if (scrWidth == 1680) {
-			// _host == "desktop"
-			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				0, 0, viewWidth, viewHeight, vcfg.extState);
-			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				200, 0, viewWidth - 200, viewHeight, vcfg.extState);
+			// machine = "desktop1680"
+			newVcfgA = new ViewConfig(vcfg.plainView, vcfg.splitConfig,
+				0, 0, vcfg.width, vcfg.height, vcfg.extState);
+			newVcfgB = new ViewConfig(vcfg.plainView, vcfg.splitConfig,
+				200, 0, vcfg.width - 200, vcfg.height, vcfg.extState);
 		}
 		if (scrWidth == 1280) {
-			// _host == "laptop1280"
-			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				60, 0, viewWidth, viewHeight, vcfg.extState); // x -- width of OS vertical
-			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				180, 0, viewWidth - 110, viewHeight, vcfg.extState);  //90 -- by trial
+			// machine = "laptop"   "1280x720"
+			newVcfgA = new ViewConfig(vcfg.plainView, vcfg.splitConfig,
+				60, 0, 1220, vcfg.height, vcfg.extState); 
+			// x=60 is width of OS vertical taskbar on left
+			newVcfgB = new ViewConfig(vcfg.plainView, vcfg.splitConfig,
+				110, 0, vcfg.width - 60, vcfg.height, vcfg.extState);  
+			// 60 is width of OS vertical taskbar on left;
+			// 110-60=50 is less than 60, i.e. the right side is per 10 from the screen edge
 		}
-		//{{{ ~~~ _host == "laptop1366" etc.
-		/*
-		if (_host == "laptop1366") {
-			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				80, 0, viewWidth, viewHeight, vcfg.extState);
-			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				220, 0, viewWidth - 140, viewHeight, vcfg.extState);
-		} 
-		if (_host == "laptop1920") { // DELL
-			newVcfgA = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				80, 0, viewWidth, viewHeight, vcfg.extState);
-			newVcfgB = new viewConfig(vcfg.plainView, vcfg.splitConfig,
-				220, 0, viewWidth - 140, viewHeight, vcfg.extState);
-		}
-		*/
-		//}}}
 
-	//{{{ //~~~ GridBagLayout
+		//{{{ //~~~ GridBagLayout  in createPaneQcTool
 		var gbl = new GridBagLayout();
 		var gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		paneHelper.setLayout(gbl);
 		// ===
-		//(0, 0) position
+		// (0, 0) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		paneHelper.add(labelMasterFolder, gbc);
-		//
+		paneHelper.add(labelPathToItem, gbc);
 		// (0, 1) position
-		gbc.weightx = 0.0; //0.5
+		gbc.weightx = 0.5; //0.5
 		gbc.gridx = 1;
 		gbc.gridy = 0;
-		paneHelper.add(textFieldMasterFolder, gbc);
+		paneHelper.add(textFieldPathToItem, gbc);
 		// (0, 2) position;
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 2;
 		gbc.gridy = 0;
 		//gbc.weighty = 1.0; // request any extra vertical space
-		paneHelper.add(buttonMasterFolder, gbc);
-		// ===
-		//(1, 0) position
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		paneHelper.add(labelPathToItem, gbc);
-		//
-		// (1, 1) position
-		gbc.weightx = 0.5; //0.5
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		paneHelper.add(textFieldPathToItem, gbc);
-		// (1, 2) position;
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 2;
-		gbc.gridy = 1;
-		//gbc.weighty = 1.0; // request any extra vertical space
 		paneHelper.add(buttonChooseItem, gbc);
 		//
-		//(2, 0) position
+		// (1, 0) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = 1;
 		paneHelper.add(labelItemId, gbc);
-		// (2, 1) position
+		// (1, 1) position
 		gbc.weightx = 1.0; //0.5
 		gbc.gridx = 1;
-		gbc.gridy = 2;
+		gbc.gridy = 1;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(buttonCloseFiles, gbc);
+		// (1, 2) position
+		gbc.weightx = 1.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		//gbc.fill = GridBagConstraints.NONE;
+		paneHelper.add(buttonOrigFiles, gbc);
+		// ===
+		// (2, 0) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		paneHelper.add(labelItemPosition, gbc);
+		// (2, 1) position
+		gbc.weightx = 0.5; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		paneHelper.add(textFieldItemPosition, gbc);
 		// (2, 2) position
 		gbc.weightx = 1.0; //0.5
 		gbc.gridx = 2;
 		gbc.gridy = 2;
 		gbc.gridwidth = 1;
 		//gbc.fill = GridBagConstraints.NONE;
-		paneHelper.add(buttonOrigFiles, gbc);
-		// ===
-		// (3, 1) position
-		gbc.weightx = 1.0; //0.5
-		gbc.gridx = 1;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		//gbc.fill = GridBagConstraints.NONE;
-		paneHelper.add(buttonExtractBz2, gbc);
-		// (3, 2) position
-		gbc.weightx = 1.0; //0.5
-		gbc.gridx = 2;
-		gbc.gridy = 3;
-		gbc.gridwidth = 1;
-		//gbc.fill = GridBagConstraints.NONE;
-		paneHelper.add(textFieldIsDone, gbc);
-		// ===
-		//(4, 0) position
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 0;
-		gbc.gridy = 4;
-		paneHelper.add(labelItemPosition, gbc);
-		// (4, 1) position
-		gbc.weightx = 0.5; //0.5
-		gbc.gridx = 1;
-		gbc.gridy = 4;
-		paneHelper.add(textFieldItemPosition, gbc);
-		// (4, 2) position
-		gbc.weightx = 1.0; //0.5
-		gbc.gridx = 2;
-		gbc.gridy = 4;
-		gbc.gridwidth = 1;
-		//gbc.fill = GridBagConstraints.NONE;
 		paneHelper.add(buttonNextItem, gbc);
 		// ===
-		//(5, 0) position
+		// (3, 0) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 0;
-		gbc.gridy = 5;
+		gbc.gridy = 3;
 		paneHelper.add(labelNotes, gbc);
-		// (5, 1) position
+		// (3, 1) position
 		gbc.weightx = 0.5; //0.5
 		gbc.gridx = 1;
-		gbc.gridy = 5;
+		gbc.gridy = 3;
 		paneHelper.add(textFieldNotes, gbc);
 		// ===
-		//(6, 0) position
+		// (4, 0) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 0;
-		gbc.gridy = 6;
-		paneHelper.add(labelExcel, gbc);
-		//(6, 1) position
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 1;
-		gbc.gridy = 6;
-		paneHelper.add(textFieldExcelFile, gbc);
-		//(6, 2) position
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 2;
-		gbc.gridy = 6;
-		paneHelper.add(buttonChooseExcel, gbc);
-		// ===
-		//(7, 0) position
-		gbc.weightx = 0.0; //0.5
-		gbc.gridx = 0;
-		gbc.gridy = 7;
+		gbc.gridy = 4;
 		paneHelper.add(labelPageType, gbc);
-		//(7, 1) position
+		// (4, 1) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 1;
-		gbc.gridy = 7;
+		gbc.gridy = 4;
 		paneHelper.add(textFieldPageType, gbc);
-		// //(7, 2) position
-		// gbc.weightx = 0.0; //0.5
-		// gbc.gridx = 2;
-		// gbc.gridy = 7;
-		// paneHelper.add(buttonTestExcel, gbc);
 		// ===
-		//(8, 0) position
+		// (5, 0) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 0;
-		gbc.gridy = 8;
+		gbc.gridy = 5;
 		paneHelper.add(labelPageNumber, gbc);
-		//(8, 1) position
+		//(5, 1) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 1;
-		gbc.gridy = 8;
+		gbc.gridy = 5;
 		paneHelper.add(textFieldPageNumber, gbc);
 		//(8, 2) position
 		gbc.weightx = 0.0; //0.5
 		gbc.gridx = 2;
-		gbc.gridy = 8;
+		gbc.gridy = 5;
 		paneHelper.add(buttonWriteToExcel, gbc);
 		//}}}
 
-	// Listeners:
-		//{{{ //~~~ buttonMasterFolder.addActionListener
-		buttonMasterFolder.addActionListener(
-			function () {
-				//try {
-				var startLocationMf = "D:"; //\\_vtex-els--sqc";
-				var dialogTitleMf = "Choose Master Folder";
-				var chooserMf = new JFileChooser(startLocationMf);
-				var pathMf;
-				chooserMf.setDialogTitle(dialogTitleMf);
-				chooserMf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				chooserMf.setPreferredSize(new Dimension(380, 660));
-				var returnValueMf = chooserMf.showOpenDialog(null);
-				if (returnValueMf == JFileChooser.APPROVE_OPTION) {
-					pathMf = chooserMf.getSelectedFile().getAbsolutePath();
-					textFieldMasterFolder.setText(pathMf);
-					nameMasterFolder = pathMf;
-					masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
-					textFieldItemPosition.setText("");
-				}
-		});
-		//}}}
-
+		// Listeners:
 		//{{{ //~~~ buttonChooseItem.addActionListener
 		buttonChooseItem.addActionListener(
 			function () {
+				if (!isMasterFolderChosen) {
+					alert("Master Folder (QC Files) is not chosen.");
+					return;
+				}
 				var pathD;
 				var startLocationD = nameMasterFolder;
 				var dialogTitleD = "Choose Folder for Item";
@@ -825,62 +705,12 @@ with (javaImports) {
 					exclObj.getItemRow(labelItemId.getText());  // here we have item name
 					textFieldPageType.setText(exclObj.getPageType());
 					isExcelFileWritten = false;
+					buttonWriteToExcel.setEnabled(true);
+				} else {
+					textFieldPageType.setText("Excel QC List (QC Files) is not chosen.");
 				}
 		});
 		//}}}
-	
-		//{{{ //~~~ buttonChooseExcel.addActionListener
-		buttonChooseExcel.addActionListener(
-			function () {
-				var startLocationExcel = "D:"; //\\_vtex-els--sqc";
-				var dialogTitleExcel = "Choose Excel QC List";
-				var chooserExcel = new JFileChooser(startLocationExcel);
-				var filterExcel = new FileNameExtensionFilter("Excel files", "xlsx", "XLSX", "xls", "XLS");  // type: FileFilter
-				var pathExcel;
-				chooserExcel.setDialogTitle(dialogTitleExcel);
-				chooserExcel.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooserExcel.setFileFilter(filterExcel);
-				chooserExcel.setPreferredSize(new Dimension(380, 660));
-				var returnValueExcel = chooserExcel.showOpenDialog(null);
-				if (returnValueExcel == JFileChooser.APPROVE_OPTION) {
-					pathExcel = chooserExcel.getSelectedFile().getAbsolutePath();
-					textFieldExcelFile.setText(pathExcel);
-					isExcelChosen = true;
-				}
-		});
-		//}}}
-		
-		/**
-		//{{{ //~~~ buttonTestExcel.addActionListener
-		buttonTestExcel.addActionListener(
-			function () {
-				try {
-				var nameExcelFile = textFieldExcelFile.getText();
-				var exco = new ExcelObj(nameExcelFile);
-				exco.getSpreadsheet();
-				
-				//exco.testSpreadsheet();
-				
-				exco.getItemRow("AESCTE105403");
-				alert("exco.itemRow " + exco.itemRow);
-				alert("exco.itemCellInRow " + exco.itemCellInRow);
-				
-				
-				var pageType = exco.getPageType();
-				alert(pageType);
-				
-				exco.acceptPageNumber(222);
-				exco.writeToFile();
-				
-					
-				} catch (exca) {
-					println("error: 10 ");
-					println(exca);
-				}
-				
-		});
-		//}}}
-		*/
 	
 		//{{{ //~~~ buttonNextItem.addActionListener
 		buttonNextItem.addActionListener(
@@ -908,6 +738,7 @@ with (javaImports) {
 						textFieldPageType.setText("");
 						textFieldPageNumber.setText("");
 						isExcelFileWritten = true;
+						buttonWriteToExcel.setEnabled(true);
 					}
 					//
 					nameExcelFile = textFieldExcelFile.getText();
@@ -917,10 +748,14 @@ with (javaImports) {
 					textFieldPageType.setText(exclObj.getPageType());
 					textFieldPageNumber.setText("");
 					isExcelFileWritten = false;
+					buttonWriteToExcel.setEnabled(true);
+				} else {
+					textFieldPageType.setText("Excel QC List (QC Files) is not chosen.");
 				}
 		});
 		//}}}
 		
+		//{{{ //~~~ buttonWriteToExcel.addActionListener
 		buttonWriteToExcel.addActionListener(
 			function() {
 				var pageNumber;
@@ -932,144 +767,12 @@ with (javaImports) {
 						textFieldPageType.setText("");
 						textFieldPageNumber.setText("");
 						isExcelFileWritten = true;
+						buttonWriteToExcel.setEnabled(false);
 					}
 				}
 		});
-
-		
-		function splitItemName(str) {
-			// Splits the item name into JID and AID.
-			var reSplit = "\\A((CRASS1)|(.+?))(\\d+)\\Z";
-			var ptnSplit = Pattern.compile(reSplit, Pattern.CASE_INSENSITIVE);
-			var mtch;
-			var data = {jid: "error", aid: "000"};
-			mtch = ptnSplit.matcher(str);
-			if (mtch.find()) {
-				data.jid = mtch.group(1); 
-				data.aid = mtch.group(4);
-			} 
-			return data;
-		}
-		
-		//{{{ //~~~ constructor function ExcelObj(excelFname)
-		function ExcelObj(excelFname) {
-			this.excelFname = excelFname;
-			this.excelFile;
-			this.workbook;
-			this.spreadsheet;
-			this.dataFormatter = new DataFormatter();
-			this.rowCount = 0;
-			this.itemRow; 
-			this.itemCellInRow;
-			this.getSpreadsheet = function() {
-				/* https://poi.apache.org/apidocs/4.1/ */
-				/* https://poi.apache.org/components/spreadsheet/quick-guide.html */
-				try {
-					this.excelFile = new File(this.excelFname);
-					ZipSecureFile.setMinInflateRatio(0.001);
-					// zipSecureFile.setMinInflateRatio(0.2); 
-					// java.io.IOException: Zip bomb detected!
-					// Uncompressed size: 143475, Raw/compressed size: 1430, ratio: 0.009967
-					// Limits: MIN_INFLATE_RATIO: 0.010000, Entry: xl/pivotCache/pivotCacheRecords1.xml 
-					var fis = new FileInputStream(this.excelFile);
-					this.workbook = new XSSFWorkbook(fis);
-					////workbook.setMissingCellPolicy(Row.CREATE_NULL_AS_BLANK);
-					//alert(this.workbook.getMissingCellPolicy());
-					///var mcp = new MissingCellPolicy(Row.CREATE_NULL_AS_BLANK);
-					//workbook.setMissingCellPolicy(UmRow.CREATE_NULL_AS_BLANK);  //(Row.MissingCellPolicy missingCellPolicy)
-					//Sets the policy on what to do when getting missing or blank cells from a row.
-					this.spreadsheet = this.workbook.getSheetAt(0);
-					this.rowCount = this.spreadsheet.getLastRowNum();
-				} catch (execptiona) {
-					print(execptiona);
-				}
-			}
-			this.testSpreadsheet = function() {
-				// testing how rows/cells are accessed
-				var rowCount = this.rowCount;
-				var rowCurrent = this.spreadsheet.getRow(0);  // type: XSSFRow;
-				var cellCount = rowCurrent.getLastCellNum();
-				// https://www.callicoder.com/java-read-excel-file-apache-poi/
-				var row;
-				var cell;
-				var rowPosition = 0;
-				var cellPosition = 0;
-				var ri;
-				var ci;
-				for (ri = 0; ri <= rowCount; ri++) {
-					row = this.spreadsheet.getRow(ri);
-					cellCount = row.getLastCellNum(); 
-					//Gets the index of the last cell contained in this row PLUS ONE.
-					for (ci = 0; ci < cellCount; ci++) {
-						///cell = row.getCell(ci, Row.MissingCellPolicy policy)
-						//Returns the cell at the given (0 based) index, with the specified Row.MissingCellPolicy
-						cell = row.getCell(ci);
-						//Returns the cell at the given (0 based) index, with the Row.MissingCellPolicy from the parent Workbook.
-						if ((ri < 3) || (ri > 148)) {
-							println("row: " + ri + 
-									", cell: " + ci + "  value: " 
-									+ this.dataFormatter.formatCellValue(cell));
-						}
-					}
-				}
-			}
-			this.getItemRow = function(itemId) {
-				var itemData = splitItemName(itemId);
-				var jidFound = false;
-				var cellValue;
-				var runOn = true;
-				for (ri = 0; (ri <= this.rowCount) && runOn; ri++) {
-					row = this.spreadsheet.getRow(ri);
-					cellCount = row.getLastCellNum(); 
-					//Gets the index of the last cell contained in this row PLUS ONE.
-					for (ci = 0; (ci < cellCount) && runOn; ci++) {
-						cell = row.getCell(ci);
-						cellValue = this.dataFormatter.formatCellValue(cell);
-						if (cellValue == itemData.jid) {
-							jidFound = true;
-						}
-						if (jidFound && (cellValue == itemData.aid)) {
-							this.itemRow = ri;
-							this.itemCellInRow = ci;
-							runOn = false;
-						}
-					}
-				}
-			}
-			this.getPageType = function() {
-				return this.spreadsheet.getRow(this.itemRow).getCell(13);
-			}
-			this.acceptPageNumber = function(numb) {
-				var numint = Integer.valueOf(numb);
-				var targetRow = this.spreadsheet.getRow(this.itemRow);
-				var targetCell = targetRow.getCell(10);
-				if (targetCell == null) {
-					targetCell = targetRow.createCell(10);
-				}
-				targetCell.setCellValue(numint);
-			}
-			this.writeToFile = function() {
-				var fileOut = new FileOutputStream(this.excelFile);
-				this.workbook.write(fileOut);
-				fileOut.close();
-			}
-		}
 		//}}}
-		
-		//{{{ //~~~ function extractArchiveSevenZ
-		function extractArchiveSevenZ(archivePath, tmpDir) {
-			// Function for code reuse.	
-			// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
-			var cll = [];
-			cll.push(_sevenz);
-			cll.push("x");
-			cll.push(archivePath);
-			cll.push("-aoa");
-			cll.push("-o" + tmpDir);
-			runExternalApp(cll, true);
-		}
-		//}}}	
-		
+
 		//{{{ //~~~ function viewPDFFilesAdobeReader
 		function viewPDFFilesAdobeReader(pdfFileList) {
 			// Function for code reuse.
@@ -1093,8 +796,7 @@ with (javaImports) {
 			}
 			// ***
 			var Runn = Java.type("java.lang.Runnable");
-			var RunAdobe = Java.extend(Runn, {
-					run: function() {
+			var RunAdobe = Java.extend(Runn, { run: function() {
 						runExternalApp(cllist, false)
 					}
 			});
@@ -1397,61 +1099,11 @@ with (javaImports) {
 				}
 			}
 			//
-			var reLastSlash = "(.+\\\\)([^\\\\]+)";
-			var ptnLastSlash = Pattern.compile(reLastSlash, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-			var mtchLastSlash;
-			mtchLastSlash = ptnLastSlash.matcher(_itemFolderName);
-			if (mtchLastSlash.find()) {
-				labelItemId.setText(mtchLastSlash.group(2).toUpperCase());
-			}
-			else {
-				labelItemId.setText("ITEM9999");
-			}
+			labelItemId.setText(getItemName(_itemFolderName));
 			buttonCloseFiles.setEnabled(true);
 			markButtonCloseFiles = true;
 		}
 		// }}}
-
-		//{{{ //~~~ buttonExtractBz2.addActionListener
-		buttonExtractBz2.addActionListener(
-			// extract all *bz2 arxhives
-			function () {
-				//var cll = [];     // command line list
-				var reBz2 = "(.*)\\\\(.*?)(\.bz2)$";  // directory - filename - .bz2
-				var ptnBz2 = Pattern.compile(reBz2, Pattern.DOTALL);
-				var mtchBz2;
-				//var pathString = textFieldPathToItem.getText();
-				var pathString = textFieldMasterFolder.getText();
-				var argFile =  new File(pathString)
-				var entriesHashArray = [];
-				//
-				arrayDirectoryContents(argFile, entriesHashArray);
-				//
-				var j;
-				var thh;
-				var thhs;
-				var tdir;
-				var length = entriesHashArray.length;
-				var counter = 0;
-				if (length > 0) {
-					for (j = 0; j < length; j++) {
-						thh = entriesHashArray[j];
-						// thh.name is java.io.File, not String
-						thhs = thh.name.toString();
-						mtchBz2 = ptnBz2.matcher(thhs);
-						if (mtchBz2.find()) {
-							tdir = mtchBz2.group(1);
-							extractArchiveSevenZ(thhs, tdir);
-							counter++;
-						}
-					}
-					textFieldIsDone.setText("Done: " + length + "/" + counter);
-				}
-				else {
-					alert("No files found in \"master folder\".");
-				}
-		});
-		//}}}
 		
 		//{{{ //~~~ buttonOrigFiles.addActionListener
 		buttonOrigFiles.addActionListener(
@@ -1570,19 +1222,282 @@ with (javaImports) {
 		
 		// Tooltips
 		buttonOrigFiles.setToolTipText("Opens orig. PDF files from the item's ZIP ..._S100.zip.");
-		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in \"Master folder\" and subfolders.");
 		//
 		return paneHelperOuter;
 	}
 	
+	function createPaneQcFiles()
+	{
+		// To make "paneQcFiles" somehow stable in size, it is put onto another JPanel
+		// with the desirable or "default" layout.
+		var paneQcFilesOuter = new JPanel();
+		var paneQcFiles = new JPanel();
+		paneQcFilesOuter.add(paneQcFiles);
+		// components:
+		var labelSourceFolder = new JLabel("Source Folder ");
+		var textFieldSourceFolder = new JTextField(25);
+		var buttonSourceFolder = new JButton("Choose Source"); 
+		
+		var labelMasterFolder = new JLabel("Master Folder ");
+		var textFieldMasterFolder = new JTextField(25);
+		var buttonMasterFolder = new JButton("Choose Master"); 
+		
+		var buttonCopyItems = new JButton("Copy Item Files");
+		var textFieldCopyItems = new JTextField(10);
+		
+		var buttonExtractBz2 = new JButton("Extract bz2 (global)");
+		var textFieldBz2Done = new JTextField(10);
+		
+		var extractBz2Color = new Color(0x00f1ea)  // 0x00f1ea
+		buttonExtractBz2.setBackground(extractBz2Color);
+		textFieldBz2Done.setBackground(extractBz2Color);
+		
+		var labelExcel = new JLabel("Excel QC List");
+		var buttonChooseExcel = new JButton("Choose Excel");
+		labelExcel.setOpaque(true);
+		labelExcel.setBackground(excelColor);
+		buttonChooseExcel.setBackground(excelColor);
+		
+		// List of all source items complete paths:
+		var itemsCompletePaths;
+		// List of all source (short) items names:
+		var itemsShortNames = [];
+		
+		//{{{ ~~~ GridBagLayout  in createPaneQcFiles
+		var gbl = new GridBagLayout();
+		var gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		paneQcFiles.setLayout(gbl);
+		// ===
+		// (0, 0) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		paneQcFiles.add(labelSourceFolder, gbc);
+		// (0, 1) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		paneQcFiles.add(textFieldSourceFolder, gbc);
+		// (0, 2) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		paneQcFiles.add(buttonSourceFolder, gbc);
+		// ===
+		// (1, 0) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		paneQcFiles.add(labelMasterFolder, gbc);
+		// (1, 1) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		paneQcFiles.add(textFieldMasterFolder, gbc);
+		// (1, 2) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		paneQcFiles.add(buttonMasterFolder, gbc);
+		// ===
+		// (2, 0) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		paneQcFiles.add(labelExcel, gbc);
+		// (2, 1) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		paneQcFiles.add(textFieldExcelFile, gbc);
+		// (2, 2) position
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 2;
+		paneQcFiles.add(buttonChooseExcel, gbc);
+		// ===
+		// (3, 1) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 3;
+		paneQcFiles.add(buttonExtractBz2, gbc);
+		// (3, 2) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 3;
+		paneQcFiles.add(textFieldBz2Done, gbc);
+		// ===
+		// (4, 1) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 1;
+		gbc.gridy = 4;
+		paneQcFiles.add(buttonCopyItems, gbc);
+		// (4, 2) position;
+		gbc.weightx = 0.0; //0.5
+		gbc.gridx = 2;
+		gbc.gridy = 4;
+		paneQcFiles.add(textFieldCopyItems, gbc);
+		
+		//}}}
+		
+		// Listeners
+		//{{{ //~~~ buttonMasterFolder.addActionListener
+		buttonMasterFolder.addActionListener(
+			function () {
+				var startLocation = "D:"; 
+				var dialogTitle = "Choose Master Folder";
+				var pathMf = dialogChooseFolder(startLocation, dialogTitle);
+				if (pathMf != "") {
+					textFieldMasterFolder.setText(pathMf);
+					nameMasterFolder = pathMf;
+					masterFolderItemsList = (new File(nameMasterFolder)).listFiles();
+					textFieldItemPosition.setText("");
+					isMasterFolderChosen = true;
+				}
+		});
+		//}}}
+		
+		//{{{ //~~~ buttonSourceFolder.addActionListener
+		buttonSourceFolder.addActionListener(
+			function () {
+				var startLocation = "D:"; 
+				var dialogTitle = "Choose Source Folder";
+				var pathSf = dialogChooseFolder(startLocation, dialogTitle);
+				var pp;
+				if (pathSf != "") {
+					textFieldSourceFolder.setText(pathSf);
+					nameSourceFolder = pathSf;
+					itemsCompletePaths = (new File(nameSourceFolder)).listFiles();
+				}
+		});
+		//}}}
+		
+		//{{{ //~~~ buttonCopyItems.addActionListener
+		buttonCopyItems.addActionListener(
+			function() {
+				if (!isMasterFolderChosen) {
+					alert("Master Folder (QC Files) is not chosen.");
+					return;
+				}
+				if (!isExcelChosen) {
+					alert("Excel QC List (QC Files) is not chosen.");
+					return;
+				}
+					
+				var exObj;
+				var nameExcel;
+				var p;
+				var counter = 1;
+				var masterFolder = textFieldMasterFolder.getText() + "\\";
+				for (p = 0; p < itemsCompletePaths.length; p++) {
+					itemsShortNames[p] = getItemName(itemsCompletePaths[p].toString());
+				}
+				try {
+					nameExcel = textFieldExcelFile.getText();
+					exObj = new ExcelObj(nameExcel);
+					exObj.getSpreadsheet();
+					for (p = 0; p < itemsShortNames.length; p++) {
+						exObj.getItemRow(itemsShortNames[p]);
+						if (exObj.itemInExcel) {
+							copyDirectoryApache(itemsCompletePaths[p].toString(),
+								masterFolder + itemsShortNames[p]);
+							exObj.itemInExcel = false;
+							counter = counter + 1;
+						} else {
+							//println("NOT FOUND " + itemsShortNames[p]);
+						}
+					}
+					textFieldCopyItems.setText(counter - 1);
+					alert("Excel QC List should be opened anew. Close starter macro!");
+				} catch (exp) {
+					println(exp);
+				}
+		});
+		//}}}
+		
+		//{{{ //~~~ buttonExtractBz2.addActionListener
+		buttonExtractBz2.addActionListener(
+			// extract all *bz2 arxhives
+			function () {
+				var reBz2 = "(.*)\\\\(.*?)(\.bz2)$";  // directory - filename - .bz2
+				var ptnBz2 = Pattern.compile(reBz2, Pattern.DOTALL);
+				var mtchBz2;
+				var pathString = textFieldMasterFolder.getText();
+				var argFile =  new File(pathString)
+				var entriesHashArray = [];
+				//
+				arrayDirectoryContents(argFile, entriesHashArray);
+				//
+				var j;
+				var thh;
+				var thhs;
+				var tdir;
+				var length = entriesHashArray.length;
+				var counter = 0;
+				if (length > 0) {
+					for (j = 0; j < length; j++) {
+						thh = entriesHashArray[j];
+						// thh.name is java.io.File, not String
+						thhs = thh.name.toString();
+						mtchBz2 = ptnBz2.matcher(thhs);
+						if (mtchBz2.find()) {
+							tdir = mtchBz2.group(1);
+							extractArchiveSevenZ(thhs, tdir);
+							counter++;
+						}
+					}
+					textFieldBz2Done.setText("Done: " + length + "/" + counter);
+				}
+				else {
+					alert("No .bz2 files found in \"master folder\".");
+				}
+		});
+		//}}}
+		
+		//{{{ //~~~ buttonChooseExcel.addActionListener
+		buttonChooseExcel.addActionListener(
+			function () {
+				if (!isMasterFolderChosen) {
+					alert("Master Folder (QC Files) is not chosen.");
+					return;
+				}
+				var startLocationExcel = "D:"; //\\_vtex-els--sqc";
+				var dialogTitleExcel = "Choose Excel QC List";
+				var chooserExcel = new JFileChooser(startLocationExcel);
+				var filterExcel = new FileNameExtensionFilter("Excel files", "xlsx", "XLSX", "xls", "XLS");  // type: FileFilter
+				var pathExcel;
+				chooserExcel.setDialogTitle(dialogTitleExcel);
+				chooserExcel.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				chooserExcel.setFileFilter(filterExcel);
+				chooserExcel.setPreferredSize(new Dimension(380, 660));
+				var returnValueExcel = chooserExcel.showOpenDialog(null);
+				if (returnValueExcel == JFileChooser.APPROVE_OPTION) {
+					pathExcel = chooserExcel.getSelectedFile().getAbsolutePath();
+					textFieldExcelFile.setText(pathExcel);
+					isExcelChosen = true;
+				}
+		});
+		//}}}
+		
+		
+		// Tooltips
+		buttonExtractBz2.setToolTipText("Extracts *.bz2 archives in \"Master folder\" and subfolders.");
+		buttonCopyItems.setToolTipText("Based on Excel file, copies item files from \"Source folder\" to \"Master folder\".");
+		
+		return paneQcFilesOuter;
+	}
+	
+	
 	function createPaneAbout()
 	{
-		var aboutString = "=STARTER :: JS :: 2019-11-05=" 
+		var aboutString = "=STARTER :: JS :: 2019-11-25=" 
 		aboutString = aboutString + "\nLatest changes:"; 
+		aboutString = aboutString + "\n2019.11.25: Pane 'QC Tools', minor change.";
+		aboutString = aboutString + "\n2019.11.07-11: Pane 'QC Files' added.";
 		aboutString = aboutString + "\n2019.11.05: Excel file is in work.";
 		aboutString = aboutString + "\n2019.09.29-30: Button 'Next'.";
 		aboutString = aboutString + "\nEarly history: 2017.01.03-2018.09.10; 2018.11.23";
-		//var aboutPaneOuter = new JPanel();
 		var aboutArea = new JTextArea();
 		var aboutPane = new JPanel();
 		//aboutPane.setSize(600, 400); // width, height
@@ -1594,10 +1509,165 @@ with (javaImports) {
 		//scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);  // default
 		scrollPane.setPreferredSize(new Dimension(200, 100));
 		aboutPane.add(scrollPane);
-		//aboutPaneOuter.add(aboutPane);
-		return scrollPane; // aboutPaneOuter;
+		return scrollPane; 
 	}
+	
+	// ===== FUNCTIONS =====
+	//{{{ //~~~ function dialogChooseFolder
+	function dialogChooseFolder(start, title) {
+		var chooser = new JFileChooser(start);
+		var path = "";
+		chooser.setDialogTitle(title);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setPreferredSize(new Dimension(380, 660));
+		var returnValue = chooser.showOpenDialog(null);
+		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			path = chooser.getSelectedFile().getAbsolutePath();
+		}
+		return path;
+	}
+	//}}}
 
+	//{{{ //~~~ function splitItemName
+	function splitItemName(str) {
+		// Splits the item name into JID and AID.
+		var reSplit = "\\A((CRASS1)|(.+?))(\\d+)\\Z";
+		var ptnSplit = Pattern.compile(reSplit, Pattern.CASE_INSENSITIVE);
+		var mtch;
+		var data = {jid: "error", aid: "000"};
+		mtch = ptnSplit.matcher(str);
+		if (mtch.find()) {
+			data.jid = mtch.group(1); 
+			data.aid = mtch.group(4);
+		} 
+		return data;
+	}
+	//}}}
+		
+	//{{{ //~~~ constructor function ExcelObj(excelFname)
+	function ExcelObj(excelFname) {
+		this.excelFname = excelFname;
+		this.excelFile;
+		this.workbook;
+		this.spreadsheet;
+		this.dataFormatter = new DataFormatter();
+		this.rowCount = 0;
+		this.itemRow; 
+		this.itemCellInRow;
+		this.itemInExcel = false;
+		this.getSpreadsheet = function() {
+			/* https://poi.apache.org/apidocs/4.1/ */
+			/* https://poi.apache.org/components/spreadsheet/quick-guide.html */
+			try {
+				this.excelFile = new File(this.excelFname);
+				ZipSecureFile.setMinInflateRatio(0.001);
+				// zipSecureFile.setMinInflateRatio(0.2); 
+				// java.io.IOException: Zip bomb detected!
+				// Uncompressed size: 143475, Raw/compressed size: 1430, ratio: 0.009967
+				// Limits: MIN_INFLATE_RATIO: 0.010000, Entry: xl/pivotCache/pivotCacheRecords1.xml 
+				var fis = new FileInputStream(this.excelFile);
+				this.workbook = new XSSFWorkbook(fis);
+				////workbook.setMissingCellPolicy(Row.CREATE_NULL_AS_BLANK);
+				//alert(this.workbook.getMissingCellPolicy());
+				///var mcp = new MissingCellPolicy(Row.CREATE_NULL_AS_BLANK);
+				//workbook.setMissingCellPolicy(UmRow.CREATE_NULL_AS_BLANK);  //(Row.MissingCellPolicy missingCellPolicy)
+				//Sets the policy on what to do when getting missing or blank cells from a row.
+				this.spreadsheet = this.workbook.getSheetAt(0);
+				this.rowCount = this.spreadsheet.getLastRowNum();
+			} catch (exceptiona) {
+				print(exceptiona);
+			}
+		}
+		this.testSpreadsheet = function() {
+			// testing how rows/cells are accessed
+			var rowCount = this.rowCount;
+			var rowCurrent = this.spreadsheet.getRow(0);  // type: XSSFRow;
+			var cellCount = rowCurrent.getLastCellNum();
+			// https://www.callicoder.com/java-read-excel-file-apache-poi/
+			var row;
+			var cell;
+			var rowPosition = 0;
+			var cellPosition = 0;
+			var ri;
+			var ci;
+			for (ri = 0; ri <= rowCount; ri++) {
+				row = this.spreadsheet.getRow(ri);
+				cellCount = row.getLastCellNum(); 
+				//Gets the index of the last cell contained in this row PLUS ONE.
+				for (ci = 0; ci < cellCount; ci++) {
+					///cell = row.getCell(ci, Row.MissingCellPolicy policy)
+					//Returns the cell at the given (0 based) index, with the specified Row.MissingCellPolicy
+					cell = row.getCell(ci);
+					//Returns the cell at the given (0 based) index, with the Row.MissingCellPolicy from the parent Workbook.
+					if ((ri < 3) || (ri > 148)) {
+						println("row: " + ri + 
+								", cell: " + ci + "  value: " 
+								+ this.dataFormatter.formatCellValue(cell));
+					}
+				}
+			}
+		}
+		this.getItemRow = function(itemId) {
+			var itemData = splitItemName(itemId);
+			var jidFound = false;
+			var cellValue;
+			var runOn = true;
+			for (ri = 0; (ri <= this.rowCount) && runOn; ri++) {
+				row = this.spreadsheet.getRow(ri);
+				cellCount = row.getLastCellNum(); 
+				//Gets the index of the last cell contained in this row PLUS ONE.
+				for (ci = 0; (ci < cellCount) && runOn; ci++) {
+					cell = row.getCell(ci);
+					cellValue = this.dataFormatter.formatCellValue(cell);
+					if (cellValue == itemData.jid) {
+						jidFound = true;
+					}
+					if (jidFound && (cellValue == itemData.aid)) {
+						this.itemRow = ri;
+						this.itemCellInRow = ci;
+						this.itemInExcel = true;
+						runOn = false;
+					}
+				}
+			}
+		}
+		this.getPageType = function() {
+			return this.spreadsheet.getRow(this.itemRow).getCell(13);
+		}
+		this.acceptPageNumber = function(numb) {
+			var numint = Integer.valueOf(numb);
+			var targetRow = this.spreadsheet.getRow(this.itemRow);
+			var targetCell = targetRow.getCell(10);
+			if (targetCell == null) {
+				targetCell = targetRow.createCell(10);
+			}
+			targetCell.setCellValue(numint);
+		}
+		this.writeToFile = function() {
+			var fileOut = new FileOutputStream(this.excelFile);
+			this.workbook.write(fileOut);
+			fileOut.close();
+		}
+	}
+	//}}}
+	
+	//{{{ //~~~ function extractArchiveSevenZ
+	function extractArchiveSevenZ(archivePath, tmpDir) {
+		// Function for code reuse.	
+		// https://stackoverflow.com/questions/31460643/how-do-i-unzip-all-files-in-a-folder-using-7-zip-in-batch
+		var cll = [];
+		cll.push(_sevenz);
+		cll.push("x");
+		cll.push(archivePath);
+		cll.push("-aoa");
+		cll.push("-o" + tmpDir);
+		runExternalApp(cll, true);
+		// "x" -- eXtract files with full paths
+		// "-o" --  -o{Directory} : set Output directory
+		// "-aoa" -- Overwrite All existing files without prompt
+	}
+	//}}}	
+	
 	//{{{	//~~~ runExternalApp
 	function runExternalApp(commandLineList, exitMsg) {
 		/*
@@ -1642,9 +1712,9 @@ with (javaImports) {
 	// }}}
 
 	//{{{	//~~~ arrayDirectoryContents
-	// http://www.avajava.com/tutorials/lessons/how-do-i-recursively-display-all-files-and-directories-in-a-directory.html
-	// recursively collect data on all files and directories in a directory
 	function arrayDirectoryContents(argFile, argFileArray) {
+		// http://www.avajava.com/tutorials/lessons/how-do-i-recursively-display-all-files-and-directories-in-a-directory.html
+		// recursively collect data on all files and directories in a directory
 		var fileArr = Java.type ("java.util.ArrayList");
 		var entriesArray = new fileArr();
 		//
@@ -1670,42 +1740,106 @@ with (javaImports) {
 		}
 	}
 	// }}}
-
-
-	// ==================================================================
-	// === createComponents()
-	/* COMMENT out for use in the jEdit's plugin
-	var panelM = panelMain();
-	// dimensions are chosen for 1280x720 by trial:
-	panelM.setPreferredSize(new Dimension(560, 290));
-	panelM.setMaximumSize(new Dimension(560, 290));
-	panelM.setMinimumSize(new Dimension(560, 290));
+	
+	//{{{	//~~~ getItemName
+	function getItemName(folderPath) {
+		var reLastSlash = "(.+\\\\)([^\\\\]+)";
+		var ptnLastSlash = Pattern.compile(reLastSlash, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		var mtchLastSlash;
+		var itemName;
+		mtchLastSlash = ptnLastSlash.matcher(folderPath);
+		if (mtchLastSlash.find()) {
+			itemName = mtchLastSlash.group(2).toUpperCase();
+		}
+		else {
+			itemName = "ITEM9999";
+		}
+		return itemName;
+	}
+	//}}}
+	
+	//{{{	//~~~ copyItemDirectory
+	function copyDirectoryApache(source, destin) {
+		// https://kodejava.org/how-do-i-copy-directory-with-all-its-contents-to-another-directory/
+		var srcDir = new File(source);
+		var destDir = new File(destin);
+		try {
+			// Copy source directory into destination directory
+			// including its child directories and files. When
+			// the destination directory is not exists it will
+			// be created. This copy process also preserve the
+			// date information of the file.
+			FileUtilsApache.copyDirectory(srcDir, destDir);
+		} catch (exp) {
+			exp.printStackTrace();
+		}
+	}
+	//}}}
 		
-	macroFrame.getContentPane().add(panelM); 
-		//, _BorderLayout.CENTER);
-		// frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
-		// In this way, closing this frame, jEdit is not closed:
-		//frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		//frame.setDefaultCloseOperation(2);
-		// 2 corresponds DISPOSE_ON_CLOSE, see
-		// http://docs.oracle.com/javase/7/docs/api/constant-values.html#javax.swing.WindowConstants.DISPOSE_ON_CLOSE
-	macroFrame.pack();
-	macroFrame.setVisible(true);
-	// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
-	// Sets the window to be "always on top"
-	macroFrame.setAlwaysOnTop(true);
-	// Position the frame:
-	macroFrame.setMaximumSize(new Dimension(520, 520));
-	var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	var defaultScreen = ge.getDefaultScreenDevice();
-	var rect = defaultScreen.getDefaultConfiguration().getBounds();
-	var frameWidth = macroFrame.getWidth();
-	//alert("frame width: " + frameWidth);
-	var x = rect.getMaxX() - frameWidth;
-	//alert("x: " + x);
-	var y = 0;
-	macroFrame.setLocation(x, y);
-	*/
+	
+	// === Conveniency name for the main panel function of the script:
+	// ===
+	function panelMain()
+	{
+		var panelForTabbedPane = new JPanel();
+		// for plugin, the overall panel must be just JPanel
+		var tabPaneMain = new JTabbedPane();
+		//tabPane.setTabPlacement(TOP); // nutylima
+		// ...,tabPlacement=TOP]
+		var pnArticleData = createPaneArticleData();
+		tabPaneMain.addTab("Article Data", pnArticleData);
+		//
+		var pnQcTool = createPaneQcTool();
+		tabPaneMain.addTab("QC Tool", pnQcTool);
+		//
+		var pnQcFiles = createPaneQcFiles();
+		tabPaneMain.addTab("QC Files", pnQcFiles);
+		//
+		var pnAbout = createPaneAbout();
+		tabPaneMain.addTab("About", pnAbout);
+
+		tabPaneMain.setSelectedComponent(pnQcTool);
+		panelForTabbedPane.add(tabPaneMain);
+		return panelForTabbedPane;
+	}
+
+	// === makeMacroFrame
+	// ===
+	
+	function makeMacroFrame() {
+		var macroFrame = new JFrame("=STARTER :: JS :: 2019-11-11=");
+		var panelM = panelMain();
+		// dimensions are chosen for 1280x720 by trial:
+		// panelM.setPreferredSize(new Dimension(550, 293));
+		// panelM.setMaximumSize(new Dimension(550, 293));
+		// panelM.setMinimumSize(new Dimension(550, 293));
+			
+		macroFrame.getContentPane().add(panelM); 
+			//, _BorderLayout.CENTER);
+			// frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+			// In this way, closing this frame, jEdit is not closed:
+			//frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			//frame.setDefaultCloseOperation(2);
+			// 2 corresponds DISPOSE_ON_CLOSE, see
+			// http://docs.oracle.com/javase/7/docs/api/constant-values.html#javax.swing.WindowConstants.DISPOSE_ON_CLOSE
+		macroFrame.pack();
+		//alert(macroFrame.getContentPane().getSize());
+		macroFrame.setVisible(true);
+		// http://stackoverflow.com/questions/297938/always-on-top-windows-with-java
+		// Sets the window to be "always on top"
+		macroFrame.setAlwaysOnTop(true);
+		// Position the frame:
+		var ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		var defaultScreen = ge.getDefaultScreenDevice();
+		var rect = defaultScreen.getDefaultConfiguration().getBounds();
+		var frameWidth = macroFrame.getWidth();
+		var x = rect.getMaxX() - frameWidth;
+		var y = 0;
+		macroFrame.setLocation(x, y);
+		return null;
+	}
+	
+	//makeMacroFrame();
 
 }
 
